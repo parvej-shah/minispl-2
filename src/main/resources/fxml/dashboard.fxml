@@ -10,4 +10,5 @@
     <Label text="Social Media Manager" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
     <Label fx:id="summaryLabel" text="Dashboard loading..."/>
     <Button fx:id="manageContentButton" text="Manage Content" onAction="#handleOpenContent"/>
+    <Button fx:id="managePostsButton" text="Manage Posts" onAction="#handleOpenPosts"/>
 </VBox>

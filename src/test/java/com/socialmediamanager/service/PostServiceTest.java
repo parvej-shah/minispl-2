@@ -1,0 +1,60 @@
+package com.socialmediamanager.service;
+
+import com.socialmediamanager.dao.ContentDao;
+import com.socialmediamanager.dao.PlatformDao;
+import com.socialmediamanager.db.DatabaseManager;
+import com.socialmediamanager.db.DatabaseSeeder;
+import com.socialmediamanager.model.Content;
+import com.socialmediamanager.model.ContentType;
+import com.socialmediamanager.model.Platform;
+import com.socialmediamanager.model.Post;
+import com.socialmediamanager.model.PostStatus;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class PostServiceTest {
+
+    private final PostService postService = new PostService();
+    private int contentId;
+    private int platformId;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        DatabaseManager.initializeSchema();
+        DatabaseSeeder.seed();
+
+        Content content = new Content();
+        content.setTitle("Launch post");
+        content.setContentType(ContentType.TEXT);
+        contentId = new ContentDao().create(content).getId();
+
+        platformId = new PlatformDao().findAll().get(0).getId();
+    }
+
+    @Test
+    void newPostStartsAsDraft() throws Exception {
+        Post post = postService.createDraft(contentId, platformId);
+        assertEquals(PostStatus.DRAFT, post.getStatus());
+    }
+
+    @Test
+    void fullHappyPathTransitionsToScheduled() throws Exception {
+        Post post = postService.createDraft(contentId, platformId);
+        postService.markValidated(post.getId());
+        postService.schedule(post.getId(), "2026-01-01T10:00");
+
+        Post reloaded = postService.listAll().stream()
+                .filter(p -> p.getId().equals(post.getId()))
+                .findFirst().orElseThrow();
+        assertEquals(PostStatus.SCHEDULED, reloaded.getStatus());
+    }
+
+    @Test
+    void cannotScheduleADraftDirectly() throws Exception {
+        Post post = postService.createDraft(contentId, platformId);
+        assertThrows(IllegalStateException.class, () -> postService.schedule(post.getId(), "2026-01-01T10:00"));
+    }
+}
