@@ -32,6 +32,7 @@
             <Button text="Validate" onAction="#handleValidate"/>
             <Button text="Schedule" onAction="#handleSchedule"/>
             <Button text="Cancel" onAction="#handleCancel"/>
+            <Button text="Simulate Publish" onAction="#handleSimulatePublish"/>
         </HBox>
         <Label fx:id="messageLabel"/>
     </VBox>

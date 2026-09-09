@@ -3,14 +3,19 @@ package com.socialmediamanager.service;
 import com.socialmediamanager.dao.ContentDao;
 import com.socialmediamanager.dao.PlatformDao;
 import com.socialmediamanager.dao.PostDao;
+import com.socialmediamanager.dao.PublishingHistoryDao;
 import com.socialmediamanager.model.Content;
 import com.socialmediamanager.model.Platform;
 import com.socialmediamanager.model.Post;
 import com.socialmediamanager.model.PostStatus;
+import com.socialmediamanager.model.PublishingHistoryEntry;
+import com.socialmediamanager.model.PublishingResult;
+import com.socialmediamanager.observer.PostEventListener;
 import com.socialmediamanager.state.PostLifecycle;
 import com.socialmediamanager.strategy.PlatformRules;
 import com.socialmediamanager.strategy.PlatformRulesRegistry;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PostService {
@@ -18,24 +23,33 @@ public class PostService {
     private final PostDao postDao;
     private final ContentDao contentDao;
     private final PlatformDao platformDao;
+    private final PublishingHistoryDao publishingHistoryDao;
     private final PostLifecycle postLifecycle;
     private final PlatformRulesRegistry platformRulesRegistry;
+    private final List<PostEventListener> listeners = new ArrayList<>();
 
     public PostService() {
         this.postDao = new PostDao();
         this.contentDao = new ContentDao();
         this.platformDao = new PlatformDao();
+        this.publishingHistoryDao = new PublishingHistoryDao();
         this.postLifecycle = new PostLifecycle();
         this.platformRulesRegistry = new PlatformRulesRegistry();
     }
 
     public PostService(PostDao postDao, ContentDao contentDao, PlatformDao platformDao,
-                        PostLifecycle postLifecycle, PlatformRulesRegistry platformRulesRegistry) {
+                        PublishingHistoryDao publishingHistoryDao, PostLifecycle postLifecycle,
+                        PlatformRulesRegistry platformRulesRegistry) {
         this.postDao = postDao;
         this.contentDao = contentDao;
         this.platformDao = platformDao;
+        this.publishingHistoryDao = publishingHistoryDao;
         this.postLifecycle = postLifecycle;
         this.platformRulesRegistry = platformRulesRegistry;
+    }
+
+    public void addListener(PostEventListener listener) {
+        listeners.add(listener);
     }
 
     public Post createDraft(int contentId, int platformId) throws Exception {
@@ -79,10 +93,12 @@ public class PostService {
 
     public void markPublished(int postId) throws Exception {
         moveTo(postId, PostStatus.PUBLISHED, null);
+        recordOutcome(postId, PublishingResult.SUCCESS, null);
     }
 
-    public void markFailed(int postId) throws Exception {
+    public void markFailed(int postId, String reason) throws Exception {
         moveTo(postId, PostStatus.FAILED, null);
+        recordOutcome(postId, PublishingResult.FAILURE, reason);
     }
 
     public List<Post> listAll() throws Exception {
@@ -91,6 +107,25 @@ public class PostService {
 
     public List<Post> listByStatus(PostStatus status) throws Exception {
         return postDao.findByStatus(status);
+    }
+
+    public List<PublishingHistoryEntry> listPublishingHistory() throws Exception {
+        return publishingHistoryDao.findAll();
+    }
+
+    private void recordOutcome(int postId, PublishingResult result, String message) throws Exception {
+        Post post = postDao.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found: " + postId));
+
+        PublishingHistoryEntry entry = new PublishingHistoryEntry();
+        entry.setPostId(postId);
+        entry.setResult(result);
+        entry.setMessage(message);
+        publishingHistoryDao.create(entry);
+
+        for (PostEventListener listener : listeners) {
+            listener.onPublishingOutcome(post, result, message);
+        }
     }
 
     private void moveTo(int postId, PostStatus target, String scheduledAt) throws Exception {

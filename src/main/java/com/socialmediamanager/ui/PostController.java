@@ -5,6 +5,7 @@ import com.socialmediamanager.dao.PlatformDao;
 import com.socialmediamanager.model.Content;
 import com.socialmediamanager.model.Platform;
 import com.socialmediamanager.model.Post;
+import com.socialmediamanager.observer.ActivityLogListener;
 import com.socialmediamanager.service.PostService;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -13,8 +14,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 
 import java.time.LocalDateTime;
+import java.util.Random;
 
 public class PostController {
+
+    private final Random random = new Random();
 
     @FXML
     private ListView<Post> postListView;
@@ -30,9 +34,11 @@ public class PostController {
     private final PostService postService = new PostService();
     private final ContentDao contentDao = new ContentDao();
     private final PlatformDao platformDao = new PlatformDao();
+    private final ActivityLogListener activityLogListener = new ActivityLogListener();
 
     @FXML
     private void initialize() {
+        postService.addListener(activityLogListener);
         try {
             contentComboBox.setItems(FXCollections.observableArrayList(contentDao.findAll()));
             platformComboBox.setItems(FXCollections.observableArrayList(platformDao.findAll()));
@@ -87,6 +93,20 @@ public class PostController {
         withSelectedPost(post -> {
             postService.cancel(post.getId());
             messageLabel.setText("Post cancelled.");
+        });
+    }
+
+    @FXML
+    private void handleSimulatePublish() {
+        withSelectedPost(post -> {
+            postService.startPublishing(post.getId());
+            if (random.nextInt(10) < 8) {
+                postService.markPublished(post.getId());
+                messageLabel.setText("Post published.");
+            } else {
+                postService.markFailed(post.getId(), "Simulated network error");
+                messageLabel.setText("Publishing failed.");
+            }
         });
     }
 
