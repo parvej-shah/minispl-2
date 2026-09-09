@@ -221,9 +221,13 @@
 
 .stat-card {
     -fx-background-radius: 10;
-    -fx-padding: 18 30 18 30;
+    -fx-padding: 18 24 18 24;
     -fx-alignment: center;
-    -fx-min-width: 130;
+    -fx-min-width: 118;
+}
+
+.stat-card-content {
+    -fx-background-color: linear-gradient(to bottom right, #1e3a8a, #2563eb);
 }
 
 .stat-card-total {
@@ -318,4 +322,107 @@
 
 .badge-strip {
     -fx-padding: 4 0 4 0;
+}
+
+/* Step panels */
+
+.step-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+    -fx-border-color: #dfe4f2;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 8;
+    -fx-padding: 16;
+}
+
+.post-row-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #312e81;
+}
+
+.post-row-detail {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6b7396;
+}
+
+.inset-box {
+    -fx-background-color: #f6f8ff;
+    -fx-background-radius: 8;
+    -fx-border-color: #dfe4f2;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 8;
+    -fx-padding: 12;
+}
+
+.step-card-active {
+    -fx-border-color: #1d4ed8;
+    -fx-border-width: 2;
+}
+
+.step-badge {
+    -fx-background-color: linear-gradient(to bottom right, #4c1d95, #1d4ed8);
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 9 4 9;
+    -fx-background-radius: 10;
+}
+
+.step-badge-muted {
+    -fx-background-color: #c9d1ea;
+    -fx-text-fill: #5a6488;
+}
+
+.step-heading {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #312e81;
+}
+
+.list-panel-heading {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #312e81;
+}
+
+/* Lifecycle stage indicator */
+
+.stage-step {
+    -fx-background-color: #eef1fb;
+    -fx-text-fill: #8b93b0;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 5 11 5 11;
+    -fx-background-radius: 12;
+}
+
+.stage-step-done {
+    -fx-background-color: #d1fae5;
+    -fx-text-fill: #047857;
+}
+
+.stage-step-current {
+    -fx-background-color: linear-gradient(to bottom right, #4c1d95, #1d4ed8);
+    -fx-text-fill: white;
+}
+
+.stage-step-stopped {
+    -fx-background-color: #ffe4e6;
+    -fx-text-fill: #be123c;
+}
+
+.stage-arrow {
+    -fx-text-fill: #b6bdd4;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.next-step {
+    -fx-background-color: #eef4ff;
+    -fx-border-color: #bfd3ff;
+    -fx-border-width: 0 0 0 4;
+    -fx-text-fill: #1e3a8a;
+    -fx-font-size: 12px;
+    -fx-padding: 9 12 9 12;
 }

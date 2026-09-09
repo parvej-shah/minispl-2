@@ -6,9 +6,10 @@
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx"
@@ -23,64 +24,97 @@
 
         <VBox spacing="3.0" styleClass="page-header">
             <Label text="Posts" styleClass="page-title"/>
-            <Label text="Turn your content into posts, then validate and schedule them"
+            <Label text="Pick a post on the left, then validate, schedule or publish it on the right"
                    styleClass="page-subtitle"/>
         </VBox>
 
-        <HBox spacing="20.0" VBox.vgrow="ALWAYS" styleClass="content-card">
+        <HBox spacing="16.0" VBox.vgrow="ALWAYS" styleClass="content-card">
             <padding>
-                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                <Insets bottom="18.0" left="18.0" right="18.0" top="18.0"/>
             </padding>
 
-            <VBox prefWidth="330.0" spacing="8.0">
-                <Label text="All posts" styleClass="section-label"/>
+            <!-- Step 1: pick a post, with the draft creator tucked above it -->
+            <VBox fx:id="createCard" prefWidth="380.0" minWidth="340.0" spacing="10.0"
+                  styleClass="step-card">
+
+                <Button fx:id="toggleCreateButton" text="＋ New draft" onAction="#handleToggleCreate"
+                        maxWidth="Infinity"/>
+
+                <VBox fx:id="createBox" spacing="8.0" styleClass="inset-box">
+                    <VBox spacing="4.0">
+                        <Label text="CONTENT" styleClass="field-label"/>
+                        <ComboBox fx:id="contentComboBox" maxWidth="Infinity"/>
+                    </VBox>
+
+                    <VBox spacing="4.0">
+                        <Label text="PLATFORMS" styleClass="field-label"/>
+                        <FlowPane fx:id="platformCheckBoxes" hgap="14.0" vgap="6.0"/>
+                        <Label text="One draft is created per ticked platform."
+                               styleClass="hint-text" wrapText="true"/>
+                    </VBox>
+
+                    <Button fx:id="createDraftsButton" text="Create Drafts" onAction="#handleCreateDraft"
+                            styleClass="button-primary" maxWidth="Infinity"/>
+                    <Button fx:id="goToContentButton" text="Go to Content page" onAction="#handleGoToContent"
+                            maxWidth="Infinity"/>
+                    <Label fx:id="createMessageLabel" wrapText="true"/>
+                </VBox>
+
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Label fx:id="step1Badge" text="STEP 1" styleClass="step-badge"/>
+                    <Label text="Pick a post" styleClass="step-heading"/>
+                </HBox>
+
                 <ListView fx:id="postListView" VBox.vgrow="ALWAYS">
                     <placeholder>
-                        <Label text="No posts yet. Pick content and a platform, then Create Draft."
+                        <Label text="No posts yet. Click ＋ New draft above to create your first one."
                                wrapText="true" styleClass="hint-text"/>
                     </placeholder>
                 </ListView>
             </VBox>
 
-            <VBox spacing="12.0" HBox.hgrow="ALWAYS">
-                <Label text="Create a post" styleClass="section-label"/>
-
-                <VBox spacing="4.0">
-                    <Label text="CONTENT" styleClass="field-label"/>
-                    <ComboBox fx:id="contentComboBox" maxWidth="Infinity"/>
-                </VBox>
-
-                <VBox spacing="4.0">
-                    <Label text="PLATFORM" styleClass="field-label"/>
-                    <ComboBox fx:id="platformComboBox" maxWidth="Infinity"/>
-                </VBox>
-
-                <HBox>
-                    <Button text="Create Draft" onAction="#handleCreateDraft" styleClass="button-primary"/>
+            <!-- Step 2: act on selection -->
+            <VBox fx:id="actionCard" HBox.hgrow="ALWAYS" minWidth="420.0" spacing="10.0"
+                  styleClass="step-card">
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Label fx:id="step2Badge" text="STEP 2" styleClass="step-badge"/>
+                    <Label text="Validate and publish" styleClass="step-heading"/>
                 </HBox>
 
-                <Separator/>
-
-                <Label text="Selected post" styleClass="section-label"/>
                 <Label fx:id="statusLabel" styleClass="hint-text" wrapText="true"/>
 
-                <VBox fx:id="scheduleBox" spacing="6.0">
+                <HBox fx:id="stageStrip" spacing="5.0" alignment="CENTER_LEFT" styleClass="badge-strip">
+                    <Label fx:id="stageDraftLabel" text="Draft" styleClass="stage-step"/>
+                    <Label text="›" styleClass="stage-arrow"/>
+                    <Label fx:id="stageValidatedLabel" text="Validated" styleClass="stage-step"/>
+                    <Label text="›" styleClass="stage-arrow"/>
+                    <Label fx:id="stageScheduledLabel" text="Scheduled" styleClass="stage-step"/>
+                    <Label text="›" styleClass="stage-arrow"/>
+                    <Label fx:id="stagePublishedLabel" text="Published" styleClass="stage-step"/>
+                </HBox>
+
+                <Label fx:id="nextStepLabel" styleClass="next-step" wrapText="true" maxWidth="Infinity"/>
+
+                <VBox fx:id="scheduleBox" spacing="5.0">
                     <Label text="SCHEDULE DATE" styleClass="field-label"/>
                     <DatePicker fx:id="scheduleDatePicker" maxWidth="Infinity"/>
                     <Label text="SCHEDULE TIME (HH:MM)" styleClass="field-label"/>
                     <TextField fx:id="scheduleTimeField" promptText="14:30"/>
                 </VBox>
 
-                <HBox spacing="8.0">
+                <FlowPane hgap="8.0" vgap="8.0">
                     <Button fx:id="validateButton" text="Validate" onAction="#handleValidate"/>
-                    <Button fx:id="scheduleButton" text="Schedule" onAction="#handleSchedule"
-                            styleClass="button-warning"/>
                     <Button fx:id="publishButton" text="Publish Now" onAction="#handleSimulatePublish"
                             styleClass="button-success"/>
+                    <Button fx:id="scheduleButton" text="Schedule" onAction="#handleSchedule"
+                            styleClass="button-warning"/>
+                    <Button fx:id="retryButton" text="Retry" onAction="#handleRetry"/>
                     <Button fx:id="cancelButton" text="Cancel" onAction="#handleCancel"
                             styleClass="button-danger"/>
-                </HBox>
+                    <Button fx:id="editContentButton" text="Edit Text" onAction="#handleEditContent"/>
+                </FlowPane>
 
+                <Region VBox.vgrow="ALWAYS"/>
                 <Label fx:id="messageLabel" wrapText="true"/>
             </VBox>
         </HBox>
