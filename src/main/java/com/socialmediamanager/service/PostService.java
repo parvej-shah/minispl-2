@@ -113,6 +113,11 @@ public class PostService {
         return publishingHistoryDao.findAll();
     }
 
+    public List<PublishingHistoryEntry> searchPublishingHistory(PublishingResult result, Integer platformId)
+            throws Exception {
+        return publishingHistoryDao.search(result, platformId);
+    }
+
     private void recordOutcome(int postId, PublishingResult result, String message) throws Exception {
         Post post = postDao.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found: " + postId));
