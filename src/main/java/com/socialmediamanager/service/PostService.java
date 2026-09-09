@@ -65,6 +65,23 @@ public class PostService {
         return postDao.create(post);
     }
 
+    public DraftBatchResult createDraftsForPlatforms(int contentId, List<Integer> platformIds) throws Exception {
+        List<Integer> created = new ArrayList<>();
+        List<Integer> skipped = new ArrayList<>();
+        for (int platformId : platformIds) {
+            if (postDao.existsForContentAndPlatform(contentId, platformId)) {
+                skipped.add(platformId);
+            } else {
+                createDraft(contentId, platformId);
+                created.add(platformId);
+            }
+        }
+        return new DraftBatchResult(created, skipped);
+    }
+
+    public record DraftBatchResult(List<Integer> createdPlatformIds, List<Integer> skippedPlatformIds) {
+    }
+
     public void markValidated(int postId) throws Exception {
         Post post = postDao.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found: " + postId));
@@ -117,6 +134,10 @@ public class PostService {
     public void markFailed(int postId, String reason) throws Exception {
         moveTo(postId, PostStatus.FAILED, null);
         recordOutcome(postId, PublishingResult.FAILURE, reason);
+    }
+
+    public void reopenAsDraft(int postId) throws Exception {
+        moveTo(postId, PostStatus.DRAFT, null);
     }
 
     public List<Post> listAll() throws Exception {
