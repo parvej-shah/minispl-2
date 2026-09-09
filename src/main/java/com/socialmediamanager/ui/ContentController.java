@@ -24,12 +24,15 @@ public class ContentController {
     private TextArea bodyField;
     @FXML
     private Label statusLabel;
+    @FXML
+    private NavBarController navBarController;
 
     private final ContentService contentService = new ContentService();
     private Content selectedContent;
 
     @FXML
     private void initialize() {
+        navBarController.setActiveScreen("content");
         contentTypeComboBox.setItems(FXCollections.observableArrayList(ContentType.values()));
         contentListView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
             if (newValue != null) {

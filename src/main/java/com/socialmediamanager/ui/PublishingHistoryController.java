@@ -20,12 +20,15 @@ public class PublishingHistoryController {
     private ComboBox<Platform> platformFilterComboBox;
     @FXML
     private Label messageLabel;
+    @FXML
+    private NavBarController navBarController;
 
     private final PostService postService = new PostService();
     private final PlatformDao platformDao = new PlatformDao();
 
     @FXML
     private void initialize() {
+        navBarController.setActiveScreen("history");
         resultFilterComboBox.setItems(FXCollections.observableArrayList(PublishingResult.values()));
         try {
             platformFilterComboBox.setItems(FXCollections.observableArrayList(platformDao.findAll()));

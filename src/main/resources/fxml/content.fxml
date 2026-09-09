@@ -10,30 +10,38 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<HBox spacing="16.0" xmlns="http://javafx.com/javafx"
+<VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.socialmediamanager.ui.ContentController">
-    <padding>
-        <Insets bottom="16.0" left="16.0" right="16.0" top="16.0"/>
-    </padding>
+    <fx:include fx:id="navBar" source="nav_bar.fxml"/>
 
-    <VBox prefWidth="260.0" spacing="8.0">
-        <Label text="Content" style="-fx-font-weight: bold;"/>
-        <ListView fx:id="contentListView" VBox.vgrow="ALWAYS"/>
-        <Button text="New" onAction="#handleNew"/>
-        <Button text="Delete" onAction="#handleDelete"/>
-    </VBox>
+    <HBox spacing="16.0" VBox.vgrow="ALWAYS">
+        <padding>
+            <Insets bottom="16.0" left="16.0" right="16.0" top="16.0"/>
+        </padding>
 
-    <VBox spacing="8.0" HBox.hgrow="ALWAYS">
-        <Label text="Title"/>
-        <TextField fx:id="titleField"/>
-        <Label text="Type"/>
-        <ComboBox fx:id="contentTypeComboBox"/>
-        <Label text="Body"/>
-        <TextArea fx:id="bodyField" VBox.vgrow="ALWAYS"/>
-        <HBox spacing="8.0">
-            <Button text="Save" onAction="#handleSave"/>
-        </HBox>
-        <Label fx:id="statusLabel"/>
-    </VBox>
-</HBox>
+        <VBox prefWidth="260.0" spacing="8.0">
+            <Label text="Content" style="-fx-font-weight: bold;"/>
+            <ListView fx:id="contentListView" VBox.vgrow="ALWAYS">
+                <placeholder>
+                    <Label text="No content yet. Fill in the form and click Save." wrapText="true"/>
+                </placeholder>
+            </ListView>
+            <Button text="New" onAction="#handleNew"/>
+            <Button text="Delete" onAction="#handleDelete"/>
+        </VBox>
+
+        <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+            <Label text="Title"/>
+            <TextField fx:id="titleField"/>
+            <Label text="Type"/>
+            <ComboBox fx:id="contentTypeComboBox"/>
+            <Label text="Body"/>
+            <TextArea fx:id="bodyField" VBox.vgrow="ALWAYS"/>
+            <HBox spacing="8.0">
+                <Button text="Save" onAction="#handleSave"/>
+            </HBox>
+            <Label fx:id="statusLabel"/>
+        </VBox>
+    </HBox>
+</VBox>

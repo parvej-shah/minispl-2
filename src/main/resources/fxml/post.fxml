@@ -8,32 +8,41 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<HBox spacing="16.0" xmlns="http://javafx.com/javafx"
+<VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.socialmediamanager.ui.PostController">
-    <padding>
-        <Insets bottom="16.0" left="16.0" right="16.0" top="16.0"/>
-    </padding>
+    <fx:include fx:id="navBar" source="nav_bar.fxml"/>
 
-    <VBox prefWidth="280.0" spacing="8.0">
-        <Label text="Posts" style="-fx-font-weight: bold;"/>
-        <ListView fx:id="postListView" VBox.vgrow="ALWAYS"/>
-    </VBox>
+    <HBox spacing="16.0" VBox.vgrow="ALWAYS">
+        <padding>
+            <Insets bottom="16.0" left="16.0" right="16.0" top="16.0"/>
+        </padding>
 
-    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
-        <Label text="Content"/>
-        <ComboBox fx:id="contentComboBox" maxWidth="Infinity"/>
-        <Label text="Platform"/>
-        <ComboBox fx:id="platformComboBox" maxWidth="Infinity"/>
-        <Label fx:id="statusLabel" style="-fx-font-weight: bold;"/>
+        <VBox prefWidth="280.0" spacing="8.0">
+            <Label text="Posts" style="-fx-font-weight: bold;"/>
+            <ListView fx:id="postListView" VBox.vgrow="ALWAYS">
+                <placeholder>
+                    <Label text="No posts yet. Pick content and a platform, then Create Draft."
+                           wrapText="true"/>
+                </placeholder>
+            </ListView>
+        </VBox>
 
-        <HBox spacing="8.0">
-            <Button text="Create Draft" onAction="#handleCreateDraft"/>
-            <Button text="Validate" onAction="#handleValidate"/>
-            <Button text="Schedule" onAction="#handleSchedule"/>
-            <Button text="Cancel" onAction="#handleCancel"/>
-            <Button text="Simulate Publish" onAction="#handleSimulatePublish"/>
-        </HBox>
-        <Label fx:id="messageLabel"/>
-    </VBox>
-</HBox>
+        <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+            <Label text="Content"/>
+            <ComboBox fx:id="contentComboBox" maxWidth="Infinity"/>
+            <Label text="Platform"/>
+            <ComboBox fx:id="platformComboBox" maxWidth="Infinity"/>
+            <Label fx:id="statusLabel" style="-fx-font-weight: bold;"/>
+
+            <HBox spacing="8.0">
+                <Button text="Create Draft" onAction="#handleCreateDraft"/>
+                <Button text="Validate" onAction="#handleValidate"/>
+                <Button text="Schedule" onAction="#handleSchedule"/>
+                <Button text="Cancel" onAction="#handleCancel"/>
+                <Button text="Simulate Publish" onAction="#handleSimulatePublish"/>
+            </HBox>
+            <Label fx:id="messageLabel"/>
+        </VBox>
+    </HBox>
+</VBox>
