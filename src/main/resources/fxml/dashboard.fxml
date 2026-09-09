@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="12.0" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.socialmediamanager.ui.DashboardController">
+    <Label text="Social Media Manager" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+    <Label fx:id="summaryLabel" text="Dashboard loading..."/>
+</VBox>
