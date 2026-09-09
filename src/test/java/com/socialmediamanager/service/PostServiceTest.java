@@ -14,6 +14,8 @@ import com.socialmediamanager.observer.ActivityLogListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -149,5 +151,61 @@ class PostServiceTest {
                         && "Simulated network error".equals(e.getMessage()));
 
         assertTrue(hasFailureEntry);
+    }
+
+    @Test
+    void createsOneDraftPerSelectedPlatform() throws Exception {
+        List<Integer> allPlatformIds = new PlatformDao().findAll().stream()
+                .map(Platform::getId)
+                .toList();
+
+        var result = postService.createDraftsForPlatforms(contentId, allPlatformIds);
+
+        assertEquals(allPlatformIds.size(), result.createdPlatformIds().size());
+        assertTrue(result.skippedPlatformIds().isEmpty());
+        assertEquals(allPlatformIds.size(), postService.listAll().stream()
+                .filter(p -> p.getContentId() == contentId)
+                .count());
+    }
+
+    @Test
+    void skipsPlatformsThatAlreadyHaveAPostForThatContent() throws Exception {
+        List<Integer> allPlatformIds = new PlatformDao().findAll().stream()
+                .map(Platform::getId)
+                .toList();
+        postService.createDraft(contentId, allPlatformIds.get(0));
+
+        var result = postService.createDraftsForPlatforms(contentId, allPlatformIds);
+
+        assertEquals(List.of(allPlatformIds.get(0)), result.skippedPlatformIds());
+        assertEquals(allPlatformIds.size() - 1, result.createdPlatformIds().size());
+    }
+
+    @Test
+    void validatedPostCanBePublishedWithoutSchedulingFirst() throws Exception {
+        Post post = postService.createDraft(contentId, platformId);
+        postService.markValidated(post.getId());
+
+        postService.startPublishing(post.getId());
+        postService.markPublished(post.getId());
+
+        boolean published = postService.listByStatus(PostStatus.PUBLISHED).stream()
+                .anyMatch(p -> p.getId().equals(post.getId()));
+        assertTrue(published);
+    }
+
+    @Test
+    void failedPostCanBeReopenedAsDraftAndValidatedAgain() throws Exception {
+        Post post = postService.createDraft(contentId, platformId);
+        postService.markValidated(post.getId());
+        postService.startPublishing(post.getId());
+        postService.markFailed(post.getId(), "Simulated network error");
+
+        postService.reopenAsDraft(post.getId());
+        postService.markValidated(post.getId());
+
+        boolean validated = postService.listByStatus(PostStatus.VALIDATED).stream()
+                .anyMatch(p -> p.getId().equals(post.getId()));
+        assertTrue(validated);
     }
 }

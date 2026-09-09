@@ -36,4 +36,21 @@ class PostLifecycleTest {
         assertThrows(IllegalStateException.class,
                 () -> lifecycle.assertTransition(PostStatus.DRAFT, PostStatus.SCHEDULED));
     }
+
+    @Test
+    void validatedCanPublishImmediatelyWithoutScheduling() {
+        assertTrue(lifecycle.canTransition(PostStatus.VALIDATED, PostStatus.PUBLISHING));
+    }
+
+    @Test
+    void failedCanGoBackToDraftToRetry() {
+        assertTrue(lifecycle.canTransition(PostStatus.FAILED, PostStatus.DRAFT));
+    }
+
+    @Test
+    void everyStatusHasANextStepHint() {
+        for (PostStatus status : PostStatus.values()) {
+            assertFalse(lifecycle.nextStepHint(status).isBlank());
+        }
+    }
 }

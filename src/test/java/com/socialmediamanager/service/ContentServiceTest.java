@@ -6,9 +6,9 @@ import com.socialmediamanager.model.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ContentServiceTest {
 
@@ -46,6 +46,8 @@ class ContentServiceTest {
         Content created = contentService.createContent(content);
 
         assertNotNull(created.getId());
-        assertEquals("Launch announcement", contentService.listContent().get(0).getTitle());
+        assertTrue(contentService.listContent().stream()
+                .anyMatch(c -> c.getId().equals(created.getId())
+                        && "Launch announcement".equals(c.getTitle())));
     }
 }

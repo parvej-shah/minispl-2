@@ -8,8 +8,10 @@ import com.socialmediamanager.model.Post;
 import com.socialmediamanager.model.PostStatus;
 import com.socialmediamanager.observer.ActivityLogListener;
 import com.socialmediamanager.service.PostService;
+import com.socialmediamanager.state.PostLifecycle;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -17,13 +19,18 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class PostController {
 
@@ -34,7 +41,27 @@ public class PostController {
     @FXML
     private ComboBox<Content> contentComboBox;
     @FXML
-    private ComboBox<Platform> platformComboBox;
+    private FlowPane platformCheckBoxes;
+    @FXML
+    private VBox createCard;
+    @FXML
+    private VBox actionCard;
+    @FXML
+    private Label step1Badge;
+    @FXML
+    private Label step2Badge;
+    @FXML
+    private VBox createBox;
+    @FXML
+    private Button toggleCreateButton;
+    @FXML
+    private Label createMessageLabel;
+    @FXML
+    private HBox stageStrip;
+    @FXML
+    private Button createDraftsButton;
+    @FXML
+    private Button goToContentButton;
     @FXML
     private DatePicker scheduleDatePicker;
     @FXML
@@ -50,6 +77,20 @@ public class PostController {
     @FXML
     private Button publishButton;
     @FXML
+    private Button retryButton;
+    @FXML
+    private Button editContentButton;
+    @FXML
+    private Label stageDraftLabel;
+    @FXML
+    private Label stageValidatedLabel;
+    @FXML
+    private Label stageScheduledLabel;
+    @FXML
+    private Label stagePublishedLabel;
+    @FXML
+    private Label nextStepLabel;
+    @FXML
     private Label statusLabel;
     @FXML
     private Label messageLabel;
@@ -60,6 +101,7 @@ public class PostController {
     private final ContentDao contentDao = new ContentDao();
     private final PlatformDao platformDao = new PlatformDao();
     private final ActivityLogListener activityLogListener = new ActivityLogListener();
+    private final PostLifecycle postLifecycle = new PostLifecycle();
     private final Map<Integer, String> contentTitles = new HashMap<>();
     private final Map<Integer, String> platformNames = new HashMap<>();
 
@@ -71,20 +113,57 @@ public class PostController {
         postService.addListener(activityLogListener);
         refreshOptions();
 
+        // Two lines per row (title above, platform + status below) so a long content
+        // title never forces the list to scroll sideways.
         postListView.setCellFactory(list -> new ListCell<>() {
+            private final Label titleLabel = new Label();
+            private final Label detailLabel = new Label();
+            private final VBox box = new VBox(2, titleLabel, detailLabel);
+
+            {
+                titleLabel.getStyleClass().add("post-row-title");
+                detailLabel.getStyleClass().add("post-row-detail");
+                setGraphic(box);
+            }
+
             @Override
             protected void updateItem(Post post, boolean empty) {
                 super.updateItem(post, empty);
-                setText(empty || post == null ? null : describe(post));
+                if (empty || post == null) {
+                    setGraphic(null);
+                    return;
+                }
+                titleLabel.setText(contentTitles.getOrDefault(post.getContentId(), "Unknown content"));
+                String detail = platformNames.getOrDefault(post.getPlatformId(), "Unknown platform")
+                        + "  ·  " + post.getStatus();
+                detailLabel.setText(post.getScheduledAt() == null
+                        ? detail : detail + "  ·  " + post.getScheduledAt());
+                setGraphic(box);
             }
         });
 
         postListView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
+            if (oldValue != newValue) {
+                setMessage("", "message-info");
+            }
             updateSelectionState(newValue);
         });
 
         refreshList();
+        // With no posts to pick, creating one is the only thing to do — start open.
+        setCreateBoxExpanded(postListView.getItems().isEmpty());
         updateSelectionState(null);
+    }
+
+    @FXML
+    private void handleToggleCreate() {
+        setCreateBoxExpanded(!createBox.isVisible());
+    }
+
+    private void setCreateBoxExpanded(boolean expanded) {
+        createBox.setVisible(expanded);
+        createBox.setManaged(expanded);
+        toggleCreateButton.setText(expanded ? "✕ Close new draft" : "＋ New draft");
     }
 
     private String describe(Post post) {
@@ -96,13 +175,94 @@ public class PostController {
 
     private void updateSelectionState(Post post) {
         boolean hasSelection = post != null;
-        statusLabel.setText(hasSelection ? "Selected: " + describe(post) : "No post selected.");
+        statusLabel.setText(hasSelection
+                ? describe(post)
+                : "Nothing selected — click a post in the list on the left to work on it.");
 
         PostStatus status = hasSelection ? post.getStatus() : null;
         validateButton.setDisable(status != PostStatus.DRAFT);
         scheduleButton.setDisable(status != PostStatus.VALIDATED && !scheduleBox.isVisible());
         cancelButton.setDisable(status != PostStatus.SCHEDULED);
         publishButton.setDisable(status != PostStatus.SCHEDULED && status != PostStatus.VALIDATED);
+        retryButton.setDisable(status != PostStatus.FAILED);
+        // Published and cancelled posts are final, so their text is no longer worth editing.
+        editContentButton.setDisable(!hasSelection
+                || status == PostStatus.PUBLISHED || status == PostStatus.CANCELLED);
+        publishButton.setText(status == PostStatus.SCHEDULED ? "Publish Early" : "Publish Now");
+
+        nextStepLabel.setText(hasSelection
+                ? postLifecycle.nextStepHint(status)
+                : "Pick a post from the list on the left to work on it.");
+        updateStageStrip(status);
+
+        // Highlight whichever step the user needs to act in next.
+        actionCard.getStyleClass().remove("step-card-active");
+        createCard.getStyleClass().remove("step-card-active");
+        (hasSelection ? actionCard : createCard).getStyleClass().add("step-card-active");
+
+        step1Badge.getStyleClass().remove("step-badge-muted");
+        step2Badge.getStyleClass().remove("step-badge-muted");
+        (hasSelection ? step1Badge : step2Badge).getStyleClass().add("step-badge-muted");
+        stageStrip.setVisible(hasSelection);
+        stageStrip.setManaged(hasSelection);
+    }
+
+    private void updateStageStrip(PostStatus status) {
+        int reached = switch (status == null ? PostStatus.DRAFT : status) {
+            case DRAFT, FAILED, CANCELLED -> 0;
+            case VALIDATED -> 1;
+            case SCHEDULED -> 2;
+            case PUBLISHING, PUBLISHED -> 3;
+        };
+        boolean stopped = status == PostStatus.FAILED || status == PostStatus.CANCELLED;
+
+        Label[] steps = {stageDraftLabel, stageValidatedLabel, stageScheduledLabel, stagePublishedLabel};
+        for (int i = 0; i < steps.length; i++) {
+            steps[i].getStyleClass().removeAll("stage-step-done", "stage-step-current", "stage-step-stopped");
+            if (status == null) {
+                continue;
+            }
+            if (i < reached) {
+                steps[i].getStyleClass().add("stage-step-done");
+            } else if (i == reached) {
+                steps[i].getStyleClass().add(stopped ? "stage-step-stopped" : "stage-step-current");
+            }
+        }
+
+        stageDraftLabel.setText(stopped ? status.name().charAt(0) + status.name().substring(1).toLowerCase() : "Draft");
+    }
+
+    @FXML
+    private void handleGoToContent() {
+        try {
+            SceneNavigator.switchTo((Stage) createDraftsButton.getScene().getWindow(),
+                    "/fxml/content.fxml");
+        } catch (Exception e) {
+            setCreateMessage("Could not open the Content page: " + e.getMessage(), "message-error");
+        }
+    }
+
+    @FXML
+    private void handleEditContent() {
+        Post post = postListView.getSelectionModel().getSelectedItem();
+        if (post == null) {
+            return;
+        }
+        try {
+            ContentController controller = SceneNavigator.switchToAndGetController(
+                    (Stage) editContentButton.getScene().getWindow(), "/fxml/content.fxml");
+            controller.selectContentById(post.getContentId());
+        } catch (Exception e) {
+            setMessage("Could not open the Content page: " + e.getMessage(), "message-error");
+        }
+    }
+
+    @FXML
+    private void handleRetry() {
+        withSelectedPost(post -> {
+            postService.reopenAsDraft(post.getId());
+            showInfo("Post moved back to draft. Validate it to try again.");
+        });
     }
 
     private void refreshOptions() {
@@ -111,17 +271,53 @@ public class PostController {
             contentComboBox.setItems(FXCollections.observableArrayList(contentItems));
             contentTitles.clear();
             contentItems.forEach(content -> contentTitles.put(content.getId(), content.getTitle()));
-            if (contentItems.isEmpty()) {
-                showInfo("No content yet — create some on the Content screen first.");
+
+            boolean noContent = contentItems.isEmpty();
+            contentComboBox.setPromptText(noContent
+                    ? "No content available"
+                    : "Choose content to post");
+            contentComboBox.setDisable(noContent);
+            createDraftsButton.setDisable(noContent);
+            goToContentButton.setVisible(noContent);
+            goToContentButton.setManaged(noContent);
+            if (noContent) {
+                setCreateMessage("You have no content yet. Create some on the Content page first.",
+                        "message-info");
             }
 
             var platforms = platformDao.findAll();
-            platformComboBox.setItems(FXCollections.observableArrayList(platforms));
             platformNames.clear();
             platforms.forEach(platform -> platformNames.put(platform.getId(), platform.getName()));
+
+            platformCheckBoxes.getChildren().clear();
+            for (Platform platform : platforms) {
+                CheckBox checkBox = new CheckBox(platform.getName());
+                checkBox.setUserData(platform.getId());
+                platformCheckBoxes.getChildren().add(checkBox);
+            }
         } catch (Exception e) {
             showError("Error loading options: " + e.getMessage());
         }
+    }
+
+    private List<Integer> selectedPlatformIds() {
+        return platformCheckBoxes.getChildren().stream()
+                .map(node -> (CheckBox) node)
+                .filter(CheckBox::isSelected)
+                .map(checkBox -> (Integer) checkBox.getUserData())
+                .toList();
+    }
+
+    private void clearPlatformSelection() {
+        platformCheckBoxes.getChildren().stream()
+                .map(node -> (CheckBox) node)
+                .forEach(checkBox -> checkBox.setSelected(false));
+    }
+
+    private String namesOf(List<Integer> platformIds) {
+        return platformIds.stream()
+                .map(id -> platformNames.getOrDefault(id, "Unknown"))
+                .collect(Collectors.joining(", "));
     }
 
     private void showSuccess(String text) {
@@ -137,25 +333,59 @@ public class PostController {
     }
 
     private void setMessage(String text, String styleClass) {
-        messageLabel.getStyleClass().removeAll("message-success", "message-error", "message-info");
-        messageLabel.getStyleClass().add(styleClass);
-        messageLabel.setText(text);
+        applyMessage(messageLabel, text, styleClass);
+    }
+
+    private void setCreateMessage(String text, String styleClass) {
+        // The create box can be collapsed, which would hide its label — in that case
+        // show the message on the always-visible Step 2 panel instead.
+        applyMessage(createBox.isVisible() ? createMessageLabel : messageLabel, text, styleClass);
+    }
+
+    private void applyMessage(Label label, String text, String styleClass) {
+        label.getStyleClass().removeAll("message-success", "message-error", "message-info");
+        label.getStyleClass().add(styleClass);
+        label.setText(text);
     }
 
     @FXML
     private void handleCreateDraft() {
         Content content = contentComboBox.getValue();
-        Platform platform = platformComboBox.getValue();
-        if (content == null || platform == null) {
-            showError("Select content and platform first.");
+        List<Integer> platformIds = selectedPlatformIds();
+        if (content == null) {
+            setCreateMessage("Select content first.", "message-error");
+            return;
+        }
+        if (platformIds.isEmpty()) {
+            setCreateMessage("Tick at least one platform.", "message-error");
             return;
         }
         try {
-            postService.createDraft(content.getId(), platform.getId());
-            showSuccess("Draft created for " + content.getTitle() + " on " + platform.getName() + ".");
+            var result = postService.createDraftsForPlatforms(content.getId(), platformIds);
             refreshList();
+            clearPlatformSelection();
+
+            if (result.createdPlatformIds().isEmpty()) {
+                setCreateMessage(content.getTitle() + " already has a post on "
+                        + namesOf(result.skippedPlatformIds()) + ".", "message-error");
+                return;
+            }
+
+            // Collapse the creator so the new drafts are visible in the list behind it.
+            setCreateBoxExpanded(false);
+            selectNewestDraftFor(content.getId(), result.createdPlatformIds().get(0));
+
+            if (result.skippedPlatformIds().isEmpty()) {
+                setCreateMessage("Created " + result.createdPlatformIds().size() + " draft(s): "
+                        + namesOf(result.createdPlatformIds())
+                        + ". First one selected below.", "message-success");
+            } else {
+                setCreateMessage("Created " + namesOf(result.createdPlatformIds())
+                        + ". Skipped " + namesOf(result.skippedPlatformIds())
+                        + " — already posted there.", "message-info");
+            }
         } catch (Exception e) {
-            showError(e.getMessage());
+            setCreateMessage(e.getMessage(), "message-error");
         }
     }
 
@@ -239,6 +469,16 @@ public class PostController {
         } catch (Exception e) {
             showError(e.getMessage());
         }
+    }
+
+    private void selectNewestDraftFor(int contentId, int platformId) {
+        postListView.getItems().stream()
+                .filter(p -> p.getContentId() == contentId && p.getPlatformId() == platformId)
+                .findFirst()
+                .ifPresent(p -> {
+                    postListView.getSelectionModel().select(p);
+                    postListView.scrollTo(p);
+                });
     }
 
     private void reselect(Integer postId) {
