@@ -10,10 +10,15 @@ import com.socialmediamanager.service.PostService;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Random;
 
 public class PostController {
@@ -26,6 +31,14 @@ public class PostController {
     private ComboBox<Content> contentComboBox;
     @FXML
     private ComboBox<Platform> platformComboBox;
+    @FXML
+    private DatePicker scheduleDatePicker;
+    @FXML
+    private TextField scheduleTimeField;
+    @FXML
+    private VBox scheduleBox;
+    @FXML
+    private Button scheduleButton;
     @FXML
     private Label statusLabel;
     @FXML
@@ -41,6 +54,8 @@ public class PostController {
     @FXML
     private void initialize() {
         navBarController.setActiveScreen("posts");
+        scheduleBox.setVisible(false);
+        scheduleBox.setManaged(false);
         postService.addListener(activityLogListener);
         refreshOptions();
 
@@ -94,8 +109,33 @@ public class PostController {
 
     @FXML
     private void handleSchedule() {
+        if (!scheduleBox.isVisible()) {
+            scheduleBox.setVisible(true);
+            scheduleBox.setManaged(true);
+            scheduleButton.setText("Confirm Schedule");
+            messageLabel.setText("Choose a date and time, then click Confirm Schedule.");
+            return;
+        }
         withSelectedPost(post -> {
-            postService.schedule(post.getId(), LocalDateTime.now().plusMinutes(5).toString());
+            if (scheduleDatePicker.getValue() == null) {
+                throw new IllegalArgumentException("Select a schedule date.");
+            }
+            LocalTime scheduleTime;
+            try {
+                scheduleTime = LocalTime.parse(scheduleTimeField.getText());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Enter time as HH:mm, for example 14:30.");
+            }
+            LocalDateTime scheduledAt = LocalDateTime.of(scheduleDatePicker.getValue(), scheduleTime);
+            if (!scheduledAt.isAfter(LocalDateTime.now())) {
+                throw new IllegalArgumentException("Schedule time must be in the future.");
+            }
+            postService.schedule(post.getId(), scheduledAt.toString());
+            scheduleBox.setVisible(false);
+            scheduleBox.setManaged(false);
+            scheduleButton.setText("Schedule");
+            scheduleDatePicker.setValue(null);
+            scheduleTimeField.clear();
             messageLabel.setText("Post scheduled.");
         });
     }

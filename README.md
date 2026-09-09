@@ -11,8 +11,11 @@ Users can:
 1. **Manage content** — create, edit, and delete text/image/video/promotional content.
 2. **Create posts** from that content targeted at a platform (Facebook, Instagram, or X), which
    are validated against that platform's rules before they can be scheduled.
-3. **Schedule and cancel posts**, and simulate publishing them.
-4. **Review publishing history**, filterable by outcome and platform, and see live counts on a
+3. **Schedule and cancel posts**, with automatic simulated publishing when the selected date and
+  time arrive.
+4. **Publish the same content on different platforms**, while preventing duplicate posts for the
+  same content and platform.
+5. **Review publishing history**, filterable by outcome and platform, and see live counts on a
    Dashboard.
 
 ## Why this Project?
@@ -44,7 +47,8 @@ SQLite, four tables: `platform`, `content`, `post`, `publishing_history`. See
 
 1. Dashboard — live post counts (total/published/scheduled/failed), navigation to other screens.
 2. Content Management — CRUD for content.
-3. Create/Edit Post — create drafts, validate, schedule, cancel, simulate publishing.
+3. Create/Edit Post — create drafts, validate, choose a date and time, schedule, cancel, or
+  simulate publishing manually.
 4. Scheduled Posts — view and cancel currently scheduled posts.
 5. Publishing History — view outcomes, filterable by result and platform.
 

@@ -45,6 +45,18 @@ public class PostDao {
         return Optional.empty();
     }
 
+    public boolean existsForContentAndPlatform(int contentId, int platformId) throws Exception {
+        String sql = "SELECT 1 FROM post WHERE content_id = ? AND platform_id = ? "
+                + "AND status <> 'CANCELLED' LIMIT 1";
+        try (PreparedStatement statement = DatabaseManager.getConnection().prepareStatement(sql)) {
+            statement.setInt(1, contentId);
+            statement.setInt(2, platformId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next();
+            }
+        }
+    }
+
     public List<Post> findAll() throws Exception {
         List<Post> results = new ArrayList<>();
         String sql = "SELECT * FROM post ORDER BY created_at DESC";
@@ -62,6 +74,22 @@ public class PostDao {
         String sql = "SELECT * FROM post WHERE status = ? ORDER BY created_at DESC";
         try (PreparedStatement statement = DatabaseManager.getConnection().prepareStatement(sql)) {
             statement.setString(1, status.name());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    results.add(mapRow(resultSet));
+                }
+            }
+        }
+        return results;
+    }
+
+    public List<Post> findDueScheduled(String scheduledAt) throws Exception {
+        List<Post> results = new ArrayList<>();
+        String sql = "SELECT * FROM post WHERE status = ? AND scheduled_at <= ? "
+                + "ORDER BY scheduled_at";
+        try (PreparedStatement statement = DatabaseManager.getConnection().prepareStatement(sql)) {
+            statement.setString(1, PostStatus.SCHEDULED.name());
+            statement.setString(2, scheduledAt);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     results.add(mapRow(resultSet));

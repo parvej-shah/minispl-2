@@ -45,6 +45,27 @@ class PostServiceTest {
     }
 
     @Test
+    void sameContentCanBePostedOnDifferentPlatforms() throws Exception {
+        int instagramId = new PlatformDao().findAll().stream()
+                .filter(platform -> platform.getName().equals("Instagram"))
+                .findFirst().orElseThrow().getId();
+
+        Post firstPost = postService.createDraft(contentId, platformId);
+        Post secondPost = postService.createDraft(contentId, instagramId);
+
+        assertEquals(platformId, firstPost.getPlatformId());
+        assertEquals(instagramId, secondPost.getPlatformId());
+    }
+
+    @Test
+    void sameContentCannotBePostedTwiceOnTheSamePlatform() throws Exception {
+        postService.createDraft(contentId, platformId);
+
+        assertThrows(IllegalStateException.class,
+                () -> postService.createDraft(contentId, platformId));
+    }
+
+    @Test
     void fullHappyPathTransitionsToScheduled() throws Exception {
         Post post = postService.createDraft(contentId, platformId);
         postService.markValidated(post.getId());

@@ -17,6 +17,8 @@ import com.socialmediamanager.strategy.PlatformRulesRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Random;
 
 public class PostService {
 
@@ -53,6 +55,9 @@ public class PostService {
     }
 
     public Post createDraft(int contentId, int platformId) throws Exception {
+        if (postDao.existsForContentAndPlatform(contentId, platformId)) {
+            throw new IllegalStateException("This content is already posted for the selected platform.");
+        }
         Post post = new Post();
         post.setContentId(contentId);
         post.setPlatformId(platformId);
@@ -81,6 +86,19 @@ public class PostService {
 
     public void schedule(int postId, String scheduledAt) throws Exception {
         moveTo(postId, PostStatus.SCHEDULED, scheduledAt);
+    }
+
+    public void publishDuePosts() throws Exception {
+        List<Post> duePosts = postDao.findDueScheduled(LocalDateTime.now().toString());
+        Random random = new Random();
+        for (Post post : duePosts) {
+            startPublishing(post.getId());
+            if (random.nextInt(10) < 8) {
+                markPublished(post.getId());
+            } else {
+                markFailed(post.getId(), "Simulated network error");
+            }
+        }
     }
 
     public void cancel(int postId) throws Exception {
