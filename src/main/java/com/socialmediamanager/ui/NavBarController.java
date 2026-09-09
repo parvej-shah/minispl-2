@@ -19,12 +19,15 @@ public class NavBarController {
     private Button scheduledButton;
     @FXML
     private Button historyButton;
+    @FXML
+    private Button analyticsButton;
 
     public void setActiveScreen(String screen) {
         markActive(contentButton, screen.equals("content"));
         markActive(postsButton, screen.equals("posts"));
         markActive(scheduledButton, screen.equals("scheduled"));
         markActive(historyButton, screen.equals("history"));
+        markActive(analyticsButton, screen.equals("analytics"));
     }
 
     private void markActive(Button button, boolean active) {
@@ -57,6 +60,11 @@ public class NavBarController {
     @FXML
     private void handleGoHistory() {
         navigateTo("/fxml/publishing_history.fxml");
+    }
+
+    @FXML
+    private void handleGoAnalytics() {
+        navigateTo("/fxml/analytics.fxml");
     }
 
     private void navigateTo(String fxmlPath) {

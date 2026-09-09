@@ -72,6 +72,14 @@
             </VBox>
         </HBox>
 
+        <HBox spacing="16.0" alignment="CENTER">
+            <VBox fx:id="analyticsButton" spacing="3.0" styleClass="action-tile"
+                  onMouseClicked="#handleOpenAnalytics">
+                <Label text="Analytics" styleClass="action-tile-title"/>
+                <Label text="See how your published posts performed" styleClass="action-tile-desc"/>
+            </VBox>
+        </HBox>
+
         <Label fx:id="summaryLabel" styleClass="message-error"/>
     </VBox>
 </VBox>

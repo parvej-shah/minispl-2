@@ -45,6 +45,9 @@ public class DashboardController {
     @FXML
     private VBox publishingHistoryButton;
 
+    @FXML
+    private VBox analyticsButton;
+
     private final PostService postService = new PostService();
     private final ContentService contentService = new ContentService();
 
@@ -90,6 +93,16 @@ public class DashboardController {
             SceneNavigator.switchTo(stage, "/fxml/publishing_history.fxml");
         } catch (Exception e) {
             summaryLabel.setText("Error opening publishing history screen: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleOpenAnalytics() {
+        try {
+            Stage stage = (Stage) analyticsButton.getScene().getWindow();
+            SceneNavigator.switchTo(stage, "/fxml/analytics.fxml");
+        } catch (Exception e) {
+            summaryLabel.setText("Error opening analytics screen: " + e.getMessage());
         }
     }
 

@@ -25,6 +25,7 @@
         <Button fx:id="postsButton" text="Posts" onAction="#handleGoPosts" styleClass="nav-button"/>
         <Button fx:id="scheduledButton" text="Scheduled" onAction="#handleGoScheduled" styleClass="nav-button"/>
         <Button fx:id="historyButton" text="History" onAction="#handleGoHistory" styleClass="nav-button"/>
+        <Button fx:id="analyticsButton" text="Analytics" onAction="#handleGoAnalytics" styleClass="nav-button"/>
         <Region HBox.hgrow="ALWAYS"/>
     </HBox>
 </VBox>
