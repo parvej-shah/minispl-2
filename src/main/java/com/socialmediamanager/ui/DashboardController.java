@@ -4,8 +4,8 @@ import com.socialmediamanager.model.Post;
 import com.socialmediamanager.model.PostStatus;
 import com.socialmediamanager.service.PostService;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.List;
@@ -18,16 +18,28 @@ public class DashboardController {
     private Label summaryLabel;
 
     @FXML
-    private Button manageContentButton;
+    private Label totalValueLabel;
 
     @FXML
-    private Button managePostsButton;
+    private Label publishedValueLabel;
 
     @FXML
-    private Button scheduledPostsButton;
+    private Label scheduledValueLabel;
 
     @FXML
-    private Button publishingHistoryButton;
+    private Label failedValueLabel;
+
+    @FXML
+    private VBox manageContentButton;
+
+    @FXML
+    private VBox managePostsButton;
+
+    @FXML
+    private VBox scheduledPostsButton;
+
+    @FXML
+    private VBox publishingHistoryButton;
 
     private final PostService postService = new PostService();
 
@@ -81,12 +93,11 @@ public class DashboardController {
             List<Post> posts = postService.listAll();
             Map<PostStatus, Long> counts = posts.stream()
                     .collect(Collectors.groupingBy(Post::getStatus, Collectors.counting()));
-            summaryLabel.setText(String.format(
-                    "Total: %d | Published: %d | Scheduled: %d | Failed: %d",
-                    posts.size(),
-                    counts.getOrDefault(PostStatus.PUBLISHED, 0L),
-                    counts.getOrDefault(PostStatus.SCHEDULED, 0L),
-                    counts.getOrDefault(PostStatus.FAILED, 0L)));
+
+            totalValueLabel.setText(String.valueOf(posts.size()));
+            publishedValueLabel.setText(String.valueOf(counts.getOrDefault(PostStatus.PUBLISHED, 0L)));
+            scheduledValueLabel.setText(String.valueOf(counts.getOrDefault(PostStatus.SCHEDULED, 0L)));
+            failedValueLabel.setText(String.valueOf(counts.getOrDefault(PostStatus.FAILED, 0L)));
         } catch (Exception e) {
             summaryLabel.setText("Error loading summary: " + e.getMessage());
         }

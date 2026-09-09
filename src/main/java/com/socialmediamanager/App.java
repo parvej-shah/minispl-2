@@ -27,8 +27,12 @@ public class App extends Application {
         publishingScheduler = new PublishingScheduler(new PostService());
         publishingScheduler.start();
         Parent root = FXMLLoader.load(getClass().getResource("/fxml/dashboard.fxml"));
+        Scene scene = new Scene(root, 980, 640);
+        scene.getStylesheets().add(getClass().getResource("/css/app.css").toExternalForm());
         primaryStage.setTitle("Social Media Manager");
-        primaryStage.setScene(new Scene(root, 900, 600));
+        primaryStage.setScene(scene);
+        primaryStage.setMinWidth(880);
+        primaryStage.setMinHeight(560);
         primaryStage.show();
     }
 

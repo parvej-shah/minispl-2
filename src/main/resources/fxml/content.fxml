@@ -15,33 +15,65 @@
       fx:controller="com.socialmediamanager.ui.ContentController">
     <fx:include fx:id="navBar" source="nav_bar.fxml"/>
 
-    <HBox spacing="16.0" VBox.vgrow="ALWAYS">
+    <VBox VBox.vgrow="ALWAYS">
         <padding>
-            <Insets bottom="16.0" left="16.0" right="16.0" top="16.0"/>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="16.0"/>
         </padding>
 
-        <VBox prefWidth="260.0" spacing="8.0">
-            <Label text="Content" style="-fx-font-weight: bold;"/>
-            <ListView fx:id="contentListView" VBox.vgrow="ALWAYS">
-                <placeholder>
-                    <Label text="No content yet. Fill in the form and click Save." wrapText="true"/>
-                </placeholder>
-            </ListView>
-            <Button text="New" onAction="#handleNew"/>
-            <Button text="Delete" onAction="#handleDelete"/>
+        <VBox spacing="3.0" styleClass="page-header">
+            <Label text="Content Library" styleClass="page-title"/>
+            <Label text="Write the material you will publish to your platforms"
+                   styleClass="page-subtitle"/>
         </VBox>
 
-        <VBox spacing="8.0" HBox.hgrow="ALWAYS">
-            <Label text="Title"/>
-            <TextField fx:id="titleField"/>
-            <Label text="Type"/>
-            <ComboBox fx:id="contentTypeComboBox"/>
-            <Label text="Body"/>
-            <TextArea fx:id="bodyField" VBox.vgrow="ALWAYS"/>
-            <HBox spacing="8.0">
-                <Button text="Save" onAction="#handleSave"/>
-            </HBox>
-            <Label fx:id="statusLabel"/>
-        </VBox>
-    </HBox>
+        <HBox spacing="20.0" VBox.vgrow="ALWAYS" styleClass="content-card">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+            </padding>
+
+            <VBox prefWidth="290.0" spacing="8.0">
+                <Label text="Saved content" styleClass="section-label"/>
+                <ListView fx:id="contentListView" VBox.vgrow="ALWAYS">
+                    <placeholder>
+                        <Label text="No content yet. Fill in the form and click Save."
+                               wrapText="true" styleClass="hint-text"/>
+                    </placeholder>
+                </ListView>
+                <HBox spacing="8.0">
+                    <Button text="New" onAction="#handleNew"/>
+                    <Button fx:id="deleteButton" text="Delete" onAction="#handleDelete"
+                            styleClass="button-danger"/>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="12.0" HBox.hgrow="ALWAYS">
+                <Label fx:id="formTitleLabel" text="New content" styleClass="section-label"/>
+
+                <VBox spacing="4.0">
+                    <Label text="TITLE" styleClass="field-label"/>
+                    <TextField fx:id="titleField" promptText="e.g. Spring sale announcement"/>
+                </VBox>
+
+                <VBox spacing="4.0">
+                    <Label text="TYPE" styleClass="field-label"/>
+                    <ComboBox fx:id="contentTypeComboBox" maxWidth="Infinity"/>
+                    <Label text="Instagram posts require an image, video or promotional type."
+                           styleClass="hint-text" wrapText="true"/>
+                </VBox>
+
+                <VBox spacing="4.0" VBox.vgrow="ALWAYS">
+                    <Label text="BODY" styleClass="field-label"/>
+                    <TextArea fx:id="bodyField" VBox.vgrow="ALWAYS"
+                              promptText="Write the post text here. X allows at most 280 characters."/>
+                    <Label fx:id="characterCountLabel" styleClass="hint-text"/>
+                </VBox>
+
+                <HBox spacing="8.0">
+                    <Button text="Save Content" onAction="#handleSave" styleClass="button-primary"/>
+                </HBox>
+
+                <Label fx:id="statusLabel" wrapText="true"/>
+            </VBox>
+        </HBox>
+    </VBox>
 </VBox>

@@ -2,24 +2,29 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
-<HBox fx:id="navBar" spacing="8.0" alignment="CENTER_LEFT" style="-fx-background-color: #f4f5f7; -fx-border-color: #dfe1e6; -fx-border-width: 0 0 1 0;"
-      xmlns="http://javafx.com/javafx"
+<VBox fx:id="navBar" xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.socialmediamanager.ui.NavBarController">
-    <padding>
-        <Insets bottom="10.0" left="12.0" right="12.0" top="10.0"/>
-    </padding>
 
-    <Button fx:id="backButton" text="&#8592; Dashboard" onAction="#handleGoDashboard"
-            style="-fx-font-weight: bold; -fx-background-color: #ffffff; -fx-border-color: #c1c7d0; -fx-border-radius: 4; -fx-background-radius: 4;"/>
-    <Separator orientation="VERTICAL"/>
-    <Button fx:id="contentButton" text="Content" onAction="#handleGoContent"/>
-    <Button fx:id="postsButton" text="Posts" onAction="#handleGoPosts"/>
-    <Button fx:id="scheduledButton" text="Scheduled" onAction="#handleGoScheduled"/>
-    <Button fx:id="historyButton" text="History" onAction="#handleGoHistory"/>
-    <Region HBox.hgrow="ALWAYS"/>
-</HBox>
+    <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="app-bar">
+        <Label text="Social Media Manager" styleClass="app-bar-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label text="Design Patterns Lab Project" styleClass="app-bar-subtitle"/>
+    </HBox>
+
+    <HBox spacing="8.0" alignment="CENTER_LEFT" styleClass="nav-bar">
+        <Button fx:id="backButton" text="&#8592; Dashboard" onAction="#handleGoDashboard"
+                styleClass="nav-back-button"/>
+        <Region minWidth="8.0"/>
+        <Button fx:id="contentButton" text="Content" onAction="#handleGoContent" styleClass="nav-button"/>
+        <Button fx:id="postsButton" text="Posts" onAction="#handleGoPosts" styleClass="nav-button"/>
+        <Button fx:id="scheduledButton" text="Scheduled" onAction="#handleGoScheduled" styleClass="nav-button"/>
+        <Button fx:id="historyButton" text="History" onAction="#handleGoHistory" styleClass="nav-button"/>
+        <Region HBox.hgrow="ALWAYS"/>
+    </HBox>
+</VBox>

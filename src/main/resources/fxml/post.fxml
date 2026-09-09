@@ -6,6 +6,7 @@
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -15,42 +16,73 @@
       fx:controller="com.socialmediamanager.ui.PostController">
     <fx:include fx:id="navBar" source="nav_bar.fxml"/>
 
-    <HBox spacing="16.0" VBox.vgrow="ALWAYS">
+    <VBox VBox.vgrow="ALWAYS">
         <padding>
-            <Insets bottom="16.0" left="16.0" right="16.0" top="16.0"/>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="16.0"/>
         </padding>
 
-        <VBox prefWidth="280.0" spacing="8.0">
-            <Label text="Posts" style="-fx-font-weight: bold;"/>
-            <ListView fx:id="postListView" VBox.vgrow="ALWAYS">
-                <placeholder>
-                    <Label text="No posts yet. Pick content and a platform, then Create Draft."
-                           wrapText="true"/>
-                </placeholder>
-            </ListView>
+        <VBox spacing="3.0" styleClass="page-header">
+            <Label text="Posts" styleClass="page-title"/>
+            <Label text="Turn your content into posts, then validate and schedule them"
+                   styleClass="page-subtitle"/>
         </VBox>
 
-        <VBox spacing="10.0" HBox.hgrow="ALWAYS">
-            <Label text="Content"/>
-            <ComboBox fx:id="contentComboBox" maxWidth="Infinity"/>
-            <Label text="Platform"/>
-            <ComboBox fx:id="platformComboBox" maxWidth="Infinity"/>
-            <VBox fx:id="scheduleBox" spacing="6.0">
-                <Label text="Schedule date"/>
-                <DatePicker fx:id="scheduleDatePicker" maxWidth="Infinity"/>
-                <Label text="Schedule time (HH:mm)"/>
-                <TextField fx:id="scheduleTimeField" promptText="14:30"/>
+        <HBox spacing="20.0" VBox.vgrow="ALWAYS" styleClass="content-card">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+            </padding>
+
+            <VBox prefWidth="330.0" spacing="8.0">
+                <Label text="All posts" styleClass="section-label"/>
+                <ListView fx:id="postListView" VBox.vgrow="ALWAYS">
+                    <placeholder>
+                        <Label text="No posts yet. Pick content and a platform, then Create Draft."
+                               wrapText="true" styleClass="hint-text"/>
+                    </placeholder>
+                </ListView>
             </VBox>
-            <Label fx:id="statusLabel" style="-fx-font-weight: bold;"/>
 
-            <HBox spacing="8.0">
-                <Button text="Create Draft" onAction="#handleCreateDraft"/>
-                <Button text="Validate" onAction="#handleValidate"/>
-                <Button fx:id="scheduleButton" text="Schedule" onAction="#handleSchedule"/>
-                <Button text="Cancel" onAction="#handleCancel"/>
-                <Button text="Simulate Publish" onAction="#handleSimulatePublish"/>
-            </HBox>
-            <Label fx:id="messageLabel"/>
-        </VBox>
-    </HBox>
+            <VBox spacing="12.0" HBox.hgrow="ALWAYS">
+                <Label text="Create a post" styleClass="section-label"/>
+
+                <VBox spacing="4.0">
+                    <Label text="CONTENT" styleClass="field-label"/>
+                    <ComboBox fx:id="contentComboBox" maxWidth="Infinity"/>
+                </VBox>
+
+                <VBox spacing="4.0">
+                    <Label text="PLATFORM" styleClass="field-label"/>
+                    <ComboBox fx:id="platformComboBox" maxWidth="Infinity"/>
+                </VBox>
+
+                <HBox>
+                    <Button text="Create Draft" onAction="#handleCreateDraft" styleClass="button-primary"/>
+                </HBox>
+
+                <Separator/>
+
+                <Label text="Selected post" styleClass="section-label"/>
+                <Label fx:id="statusLabel" styleClass="hint-text" wrapText="true"/>
+
+                <VBox fx:id="scheduleBox" spacing="6.0">
+                    <Label text="SCHEDULE DATE" styleClass="field-label"/>
+                    <DatePicker fx:id="scheduleDatePicker" maxWidth="Infinity"/>
+                    <Label text="SCHEDULE TIME (HH:MM)" styleClass="field-label"/>
+                    <TextField fx:id="scheduleTimeField" promptText="14:30"/>
+                </VBox>
+
+                <HBox spacing="8.0">
+                    <Button fx:id="validateButton" text="Validate" onAction="#handleValidate"/>
+                    <Button fx:id="scheduleButton" text="Schedule" onAction="#handleSchedule"
+                            styleClass="button-warning"/>
+                    <Button fx:id="publishButton" text="Publish Now" onAction="#handleSimulatePublish"
+                            styleClass="button-success"/>
+                    <Button fx:id="cancelButton" text="Cancel" onAction="#handleCancel"
+                            styleClass="button-danger"/>
+                </HBox>
+
+                <Label fx:id="messageLabel" wrapText="true"/>
+            </VBox>
+        </HBox>
+    </VBox>
 </VBox>

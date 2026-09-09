@@ -5,6 +5,7 @@ import com.socialmediamanager.dao.PlatformDao;
 import com.socialmediamanager.model.Content;
 import com.socialmediamanager.model.Platform;
 import com.socialmediamanager.model.Post;
+import com.socialmediamanager.model.PostStatus;
 import com.socialmediamanager.observer.ActivityLogListener;
 import com.socialmediamanager.service.PostService;
 import javafx.collections.FXCollections;
@@ -12,6 +13,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -19,6 +21,8 @@ import javafx.scene.layout.VBox;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class PostController {
@@ -40,6 +44,12 @@ public class PostController {
     @FXML
     private Button scheduleButton;
     @FXML
+    private Button validateButton;
+    @FXML
+    private Button cancelButton;
+    @FXML
+    private Button publishButton;
+    @FXML
     private Label statusLabel;
     @FXML
     private Label messageLabel;
@@ -50,6 +60,8 @@ public class PostController {
     private final ContentDao contentDao = new ContentDao();
     private final PlatformDao platformDao = new PlatformDao();
     private final ActivityLogListener activityLogListener = new ActivityLogListener();
+    private final Map<Integer, String> contentTitles = new HashMap<>();
+    private final Map<Integer, String> platformNames = new HashMap<>();
 
     @FXML
     private void initialize() {
@@ -59,27 +71,75 @@ public class PostController {
         postService.addListener(activityLogListener);
         refreshOptions();
 
-        postListView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
-            if (newValue != null) {
-                statusLabel.setText("Status: " + newValue.getStatus());
+        postListView.setCellFactory(list -> new ListCell<>() {
+            @Override
+            protected void updateItem(Post post, boolean empty) {
+                super.updateItem(post, empty);
+                setText(empty || post == null ? null : describe(post));
             }
         });
 
+        postListView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
+            updateSelectionState(newValue);
+        });
+
         refreshList();
+        updateSelectionState(null);
+    }
+
+    private String describe(Post post) {
+        String contentTitle = contentTitles.getOrDefault(post.getContentId(), "Unknown content");
+        String platformName = platformNames.getOrDefault(post.getPlatformId(), "Unknown platform");
+        String line = contentTitle + "  ·  " + platformName + "  ·  " + post.getStatus();
+        return post.getScheduledAt() == null ? line : line + "  ·  " + post.getScheduledAt();
+    }
+
+    private void updateSelectionState(Post post) {
+        boolean hasSelection = post != null;
+        statusLabel.setText(hasSelection ? "Selected: " + describe(post) : "No post selected.");
+
+        PostStatus status = hasSelection ? post.getStatus() : null;
+        validateButton.setDisable(status != PostStatus.DRAFT);
+        scheduleButton.setDisable(status != PostStatus.VALIDATED && !scheduleBox.isVisible());
+        cancelButton.setDisable(status != PostStatus.SCHEDULED);
+        publishButton.setDisable(status != PostStatus.SCHEDULED && status != PostStatus.VALIDATED);
     }
 
     private void refreshOptions() {
         try {
             var contentItems = contentDao.findAll();
             contentComboBox.setItems(FXCollections.observableArrayList(contentItems));
+            contentTitles.clear();
+            contentItems.forEach(content -> contentTitles.put(content.getId(), content.getTitle()));
             if (contentItems.isEmpty()) {
-                messageLabel.setText("No content yet — create some on the Content screen first.");
+                showInfo("No content yet — create some on the Content screen first.");
             }
 
-            platformComboBox.setItems(FXCollections.observableArrayList(platformDao.findAll()));
+            var platforms = platformDao.findAll();
+            platformComboBox.setItems(FXCollections.observableArrayList(platforms));
+            platformNames.clear();
+            platforms.forEach(platform -> platformNames.put(platform.getId(), platform.getName()));
         } catch (Exception e) {
-            messageLabel.setText("Error loading options: " + e.getMessage());
+            showError("Error loading options: " + e.getMessage());
         }
+    }
+
+    private void showSuccess(String text) {
+        setMessage(text, "message-success");
+    }
+
+    private void showError(String text) {
+        setMessage(text, "message-error");
+    }
+
+    private void showInfo(String text) {
+        setMessage(text, "message-info");
+    }
+
+    private void setMessage(String text, String styleClass) {
+        messageLabel.getStyleClass().removeAll("message-success", "message-error", "message-info");
+        messageLabel.getStyleClass().add(styleClass);
+        messageLabel.setText(text);
     }
 
     @FXML
@@ -87,15 +147,15 @@ public class PostController {
         Content content = contentComboBox.getValue();
         Platform platform = platformComboBox.getValue();
         if (content == null || platform == null) {
-            messageLabel.setText("Select content and platform first.");
+            showError("Select content and platform first.");
             return;
         }
         try {
             postService.createDraft(content.getId(), platform.getId());
-            messageLabel.setText("Draft created.");
+            showSuccess("Draft created for " + content.getTitle() + " on " + platform.getName() + ".");
             refreshList();
         } catch (Exception e) {
-            messageLabel.setText("Error: " + e.getMessage());
+            showError(e.getMessage());
         }
     }
 
@@ -103,7 +163,7 @@ public class PostController {
     private void handleValidate() {
         withSelectedPost(post -> {
             postService.markValidated(post.getId());
-            messageLabel.setText("Post validated.");
+            showSuccess("Post validated and ready to schedule.");
         });
     }
 
@@ -113,7 +173,7 @@ public class PostController {
             scheduleBox.setVisible(true);
             scheduleBox.setManaged(true);
             scheduleButton.setText("Confirm Schedule");
-            messageLabel.setText("Choose a date and time, then click Confirm Schedule.");
+            showInfo("Choose a date and time, then click Confirm Schedule.");
             return;
         }
         withSelectedPost(post -> {
@@ -136,7 +196,7 @@ public class PostController {
             scheduleButton.setText("Schedule");
             scheduleDatePicker.setValue(null);
             scheduleTimeField.clear();
-            messageLabel.setText("Post scheduled.");
+            showSuccess("Post scheduled for " + scheduledAt + ".");
         });
     }
 
@@ -144,7 +204,7 @@ public class PostController {
     private void handleCancel() {
         withSelectedPost(post -> {
             postService.cancel(post.getId());
-            messageLabel.setText("Post cancelled.");
+            showSuccess("Post cancelled.");
         });
     }
 
@@ -154,10 +214,10 @@ public class PostController {
             postService.startPublishing(post.getId());
             if (random.nextInt(10) < 8) {
                 postService.markPublished(post.getId());
-                messageLabel.setText("Post published.");
+                showSuccess("Post published.");
             } else {
                 postService.markFailed(post.getId(), "Simulated network error");
-                messageLabel.setText("Publishing failed.");
+                showError("Publishing failed: simulated network error.");
             }
         });
     }
@@ -169,22 +229,30 @@ public class PostController {
     private void withSelectedPost(PostAction action) {
         Post post = postListView.getSelectionModel().getSelectedItem();
         if (post == null) {
-            messageLabel.setText("Select a post first.");
+            showError("Select a post first.");
             return;
         }
         try {
             action.run(post);
             refreshList();
+            reselect(post.getId());
         } catch (Exception e) {
-            messageLabel.setText("Error: " + e.getMessage());
+            showError(e.getMessage());
         }
+    }
+
+    private void reselect(Integer postId) {
+        postListView.getItems().stream()
+                .filter(p -> p.getId().equals(postId))
+                .findFirst()
+                .ifPresent(p -> postListView.getSelectionModel().select(p));
     }
 
     private void refreshList() {
         try {
             postListView.setItems(FXCollections.observableArrayList(postService.listAll()));
         } catch (Exception e) {
-            messageLabel.setText("Error loading posts: " + e.getMessage());
+            showError("Error loading posts: " + e.getMessage());
         }
     }
 }
