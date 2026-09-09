@@ -42,6 +42,35 @@ public class PublishingHistoryDao {
         return results;
     }
 
+    public List<PublishingHistoryEntry> search(PublishingResult result, Integer platformId) throws Exception {
+        StringBuilder sql = new StringBuilder(
+                "SELECT h.* FROM publishing_history h JOIN post p ON h.post_id = p.id WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        if (result != null) {
+            sql.append(" AND h.result = ?");
+            params.add(result.name());
+        }
+        if (platformId != null) {
+            sql.append(" AND p.platform_id = ?");
+            params.add(platformId);
+        }
+        sql.append(" ORDER BY h.occurred_at DESC");
+
+        List<PublishingHistoryEntry> results = new ArrayList<>();
+        try (PreparedStatement statement = DatabaseManager.getConnection().prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                statement.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    results.add(mapRow(resultSet));
+                }
+            }
+        }
+        return results;
+    }
+
     public List<PublishingHistoryEntry> findByPostId(int postId) throws Exception {
         List<PublishingHistoryEntry> results = new ArrayList<>();
         String sql = "SELECT * FROM publishing_history WHERE post_id = ? ORDER BY occurred_at DESC";
