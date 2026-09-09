@@ -23,6 +23,9 @@ public class DashboardController {
     @FXML
     private Button managePostsButton;
 
+    @FXML
+    private Button scheduledPostsButton;
+
     private final PostService postService = new PostService();
 
     @FXML
@@ -47,6 +50,16 @@ public class DashboardController {
             SceneNavigator.switchTo(stage, "/fxml/post.fxml");
         } catch (Exception e) {
             summaryLabel.setText("Error opening posts screen: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleOpenScheduledPosts() {
+        try {
+            Stage stage = (Stage) scheduledPostsButton.getScene().getWindow();
+            SceneNavigator.switchTo(stage, "/fxml/scheduled_posts.fxml");
+        } catch (Exception e) {
+            summaryLabel.setText("Error opening scheduled posts screen: " + e.getMessage());
         }
     }
 

@@ -71,6 +71,7 @@ public class Post {
 
     @Override
     public String toString() {
-        return "Post #" + id + " (" + status + ")";
+        String base = "Post #" + id + " (" + status + ")";
+        return scheduledAt == null ? base : base + " - scheduled for " + scheduledAt;
     }
 }
