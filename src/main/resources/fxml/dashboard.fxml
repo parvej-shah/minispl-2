@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
 
@@ -8,4 +9,5 @@
       fx:controller="com.socialmediamanager.ui.DashboardController">
     <Label text="Social Media Manager" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
     <Label fx:id="summaryLabel" text="Dashboard loading..."/>
+    <Button fx:id="manageContentButton" text="Manage Content" onAction="#handleOpenContent"/>
 </VBox>
