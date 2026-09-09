@@ -7,6 +7,7 @@ import com.socialmediamanager.model.Platform;
 import com.socialmediamanager.model.Post;
 import com.socialmediamanager.model.PostStatus;
 import com.socialmediamanager.observer.ActivityLogListener;
+import com.socialmediamanager.observer.EngagementRecorderListener;
 import com.socialmediamanager.service.PostService;
 import com.socialmediamanager.state.PostLifecycle;
 import javafx.collections.FXCollections;
@@ -111,6 +112,7 @@ public class PostController {
         scheduleBox.setVisible(false);
         scheduleBox.setManaged(false);
         postService.addListener(activityLogListener);
+        postService.addListener(new EngagementRecorderListener());
         refreshOptions();
 
         // Two lines per row (title above, platform + status below) so a long content
