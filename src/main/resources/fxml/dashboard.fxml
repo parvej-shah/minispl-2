@@ -1,25 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx"
+<VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.socialmediamanager.ui.DashboardController">
-    <padding>
-        <Insets bottom="24.0" left="24.0" right="24.0" top="24.0"/>
-    </padding>
 
-    <Label text="Social Media Manager" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-    <Label fx:id="summaryLabel" text="Dashboard loading..." style="-fx-font-size: 14px;"/>
+    <VBox alignment="CENTER" spacing="6.0" styleClass="app-bar">
+        <padding>
+            <Insets bottom="30.0" left="24.0" right="24.0" top="30.0"/>
+        </padding>
+        <Label text="Social Media Manager" styleClass="app-title"/>
+        <Label text="Plan, validate, schedule and publish across your platforms"
+               styleClass="app-tagline"/>
+    </VBox>
 
-    <HBox spacing="12.0" alignment="CENTER">
-        <Button fx:id="manageContentButton" text="Manage Content" onAction="#handleOpenContent"/>
-        <Button fx:id="managePostsButton" text="Manage Posts" onAction="#handleOpenPosts"/>
-        <Button fx:id="scheduledPostsButton" text="Scheduled Posts" onAction="#handleOpenScheduledPosts"/>
-        <Button fx:id="publishingHistoryButton" text="Publishing History" onAction="#handleOpenPublishingHistory"/>
-    </HBox>
+    <VBox alignment="CENTER" spacing="24.0" VBox.vgrow="ALWAYS">
+        <padding>
+            <Insets bottom="28.0" left="28.0" right="28.0" top="28.0"/>
+        </padding>
+
+        <HBox spacing="16.0" alignment="CENTER">
+            <VBox styleClass="stat-card, stat-card-total">
+                <Label fx:id="totalValueLabel" text="0" styleClass="stat-value"/>
+                <Label text="TOTAL POSTS" styleClass="stat-label"/>
+            </VBox>
+            <VBox styleClass="stat-card, stat-card-published">
+                <Label fx:id="publishedValueLabel" text="0" styleClass="stat-value"/>
+                <Label text="PUBLISHED" styleClass="stat-label"/>
+            </VBox>
+            <VBox styleClass="stat-card, stat-card-scheduled">
+                <Label fx:id="scheduledValueLabel" text="0" styleClass="stat-value"/>
+                <Label text="SCHEDULED" styleClass="stat-label"/>
+            </VBox>
+            <VBox styleClass="stat-card, stat-card-failed">
+                <Label fx:id="failedValueLabel" text="0" styleClass="stat-value"/>
+                <Label text="FAILED" styleClass="stat-label"/>
+            </VBox>
+        </HBox>
+
+        <HBox spacing="16.0" alignment="CENTER">
+            <VBox fx:id="manageContentButton" spacing="3.0" styleClass="action-tile"
+                  onMouseClicked="#handleOpenContent">
+                <Label text="Manage Content" styleClass="action-tile-title"/>
+                <Label text="Write and edit the material you post" styleClass="action-tile-desc"/>
+            </VBox>
+            <VBox fx:id="managePostsButton" spacing="3.0" styleClass="action-tile"
+                  onMouseClicked="#handleOpenPosts">
+                <Label text="Manage Posts" styleClass="action-tile-title"/>
+                <Label text="Create drafts, validate and schedule" styleClass="action-tile-desc"/>
+            </VBox>
+        </HBox>
+
+        <HBox spacing="16.0" alignment="CENTER">
+            <VBox fx:id="scheduledPostsButton" spacing="3.0" styleClass="action-tile"
+                  onMouseClicked="#handleOpenScheduledPosts">
+                <Label text="Scheduled Posts" styleClass="action-tile-title"/>
+                <Label text="See what is queued and cancel if needed" styleClass="action-tile-desc"/>
+            </VBox>
+            <VBox fx:id="publishingHistoryButton" spacing="3.0" styleClass="action-tile"
+                  onMouseClicked="#handleOpenPublishingHistory">
+                <Label text="Publishing History" styleClass="action-tile-title"/>
+                <Label text="Review every publish attempt and result" styleClass="action-tile-desc"/>
+            </VBox>
+        </HBox>
+
+        <Label fx:id="summaryLabel" styleClass="message-error"/>
+    </VBox>
 </VBox>

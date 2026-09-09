@@ -2,16 +2,15 @@ package com.socialmediamanager.ui;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class NavBarController {
 
-    private static final String ACTIVE_STYLE =
-            "-fx-background-color: #d3e4ff; -fx-border-color: #4c9aff; -fx-border-radius: 4; -fx-background-radius: 4; -fx-font-weight: bold;";
+    private static final String ACTIVE_CLASS = "nav-button-active";
 
     @FXML
-    private HBox navBar;
+    private VBox navBar;
     @FXML
     private Button contentButton;
     @FXML
@@ -22,10 +21,17 @@ public class NavBarController {
     private Button historyButton;
 
     public void setActiveScreen(String screen) {
-        contentButton.setStyle(screen.equals("content") ? ACTIVE_STYLE : "");
-        postsButton.setStyle(screen.equals("posts") ? ACTIVE_STYLE : "");
-        scheduledButton.setStyle(screen.equals("scheduled") ? ACTIVE_STYLE : "");
-        historyButton.setStyle(screen.equals("history") ? ACTIVE_STYLE : "");
+        markActive(contentButton, screen.equals("content"));
+        markActive(postsButton, screen.equals("posts"));
+        markActive(scheduledButton, screen.equals("scheduled"));
+        markActive(historyButton, screen.equals("history"));
+    }
+
+    private void markActive(Button button, boolean active) {
+        button.getStyleClass().remove(ACTIVE_CLASS);
+        if (active) {
+            button.getStyleClass().add(ACTIVE_CLASS);
+        }
     }
 
     @FXML
