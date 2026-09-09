@@ -28,6 +28,7 @@ class PostServiceTest {
 
         Content content = new Content();
         content.setTitle("Launch post");
+        content.setBody("We are launching something new today.");
         content.setContentType(ContentType.TEXT);
         contentId = new ContentDao().create(content).getId();
 
@@ -56,5 +57,22 @@ class PostServiceTest {
     void cannotScheduleADraftDirectly() throws Exception {
         Post post = postService.createDraft(contentId, platformId);
         assertThrows(IllegalStateException.class, () -> postService.schedule(post.getId(), "2026-01-01T10:00"));
+    }
+
+    @Test
+    void validationRejectsContentThatBreaksPlatformRules() throws Exception {
+        int instagramId = new PlatformDao().findAll().stream()
+                .filter(p -> p.getName().equals("Instagram"))
+                .findFirst().orElseThrow().getId();
+
+        Content textOnly = new Content();
+        textOnly.setTitle("No media");
+        textOnly.setBody("Just words, no picture.");
+        textOnly.setContentType(ContentType.TEXT);
+        int textOnlyContentId = new ContentDao().create(textOnly).getId();
+
+        Post post = postService.createDraft(textOnlyContentId, instagramId);
+
+        assertThrows(IllegalArgumentException.class, () -> postService.markValidated(post.getId()));
     }
 }
