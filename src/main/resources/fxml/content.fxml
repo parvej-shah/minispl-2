@@ -64,6 +64,7 @@
                 <VBox spacing="4.0" VBox.vgrow="ALWAYS">
                     <Label text="BODY" styleClass="field-label"/>
                     <TextArea fx:id="bodyField" VBox.vgrow="ALWAYS"
+                              wrapText="true" prefRowCount="10" minHeight="200.0"
                               promptText="Write the post text here. X allows at most 280 characters."/>
                     <Label fx:id="characterCountLabel" styleClass="hint-text"/>
                 </VBox>

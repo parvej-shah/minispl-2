@@ -2,6 +2,7 @@ package com.socialmediamanager.ui;
 
 import com.socialmediamanager.model.Post;
 import com.socialmediamanager.model.PostStatus;
+import com.socialmediamanager.service.ContentService;
 import com.socialmediamanager.service.PostService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -16,6 +17,9 @@ public class DashboardController {
 
     @FXML
     private Label summaryLabel;
+
+    @FXML
+    private Label contentValueLabel;
 
     @FXML
     private Label totalValueLabel;
@@ -42,6 +46,7 @@ public class DashboardController {
     private VBox publishingHistoryButton;
 
     private final PostService postService = new PostService();
+    private final ContentService contentService = new ContentService();
 
     @FXML
     private void initialize() {
@@ -94,6 +99,7 @@ public class DashboardController {
             Map<PostStatus, Long> counts = posts.stream()
                     .collect(Collectors.groupingBy(Post::getStatus, Collectors.counting()));
 
+            contentValueLabel.setText(String.valueOf(contentService.listContent().size()));
             totalValueLabel.setText(String.valueOf(posts.size()));
             publishedValueLabel.setText(String.valueOf(counts.getOrDefault(PostStatus.PUBLISHED, 0L)));
             scheduledValueLabel.setText(String.valueOf(counts.getOrDefault(PostStatus.SCHEDULED, 0L)));

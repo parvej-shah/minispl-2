@@ -2,7 +2,9 @@ package com.socialmediamanager.ui;
 
 import com.socialmediamanager.model.Content;
 import com.socialmediamanager.model.ContentType;
+import com.socialmediamanager.model.PostStatus;
 import com.socialmediamanager.service.ContentService;
+import com.socialmediamanager.service.PostService;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -38,6 +40,7 @@ public class ContentController {
     private NavBarController navBarController;
 
     private final ContentService contentService = new ContentService();
+    private final PostService postService = new PostService();
     private Content selectedContent;
 
     @FXML
@@ -56,6 +59,17 @@ public class ContentController {
 
         refreshList();
         handleNew();
+    }
+
+    /** Opens a specific piece of content for editing, used when arriving from a post. */
+    public void selectContentById(int contentId) {
+        contentListView.getItems().stream()
+                .filter(item -> item.getId() != null && item.getId() == contentId)
+                .findFirst()
+                .ifPresent(item -> {
+                    contentListView.getSelectionModel().select(item);
+                    contentListView.scrollTo(item);
+                });
     }
 
     @FXML
@@ -79,15 +93,22 @@ public class ContentController {
             content.setContentType(contentTypeComboBox.getValue());
 
             boolean isNew = content.getId() == null;
+            int reset = 0;
             if (isNew) {
                 contentService.createContent(content);
             } else {
                 contentService.updateContent(content);
+                reset = resetValidatedPosts(content.getId());
             }
 
             refreshList();
             handleNew();
-            setMessage(isNew ? "Content saved." : "Content updated.", "message-success");
+            String message = isNew ? "Content saved." : "Content updated.";
+            if (reset > 0) {
+                message += " " + reset + (reset == 1 ? " post was" : " posts were")
+                        + " sent back to draft — validate again before publishing.";
+            }
+            setMessage(message, "message-success");
         } catch (Exception e) {
             setMessage(e.getMessage(), "message-error");
         }
@@ -125,6 +146,45 @@ public class ContentController {
         bodyField.setText(content.getBody());
         contentTypeComboBox.getSelectionModel().select(content.getContentType());
         formTitleLabel.setText("Edit content");
+        showEditableDraftHint(content);
+    }
+
+    /**
+     * A post validated against the old text is no longer trustworthy once the text changes,
+     * so send it back to draft rather than let it publish on a stale approval.
+     */
+    private int resetValidatedPosts(int contentId) throws Exception {
+        int reset = 0;
+        for (Post post : postService.listAll()) {
+            if (post.getContentId() == contentId && post.getStatus() == PostStatus.VALIDATED) {
+                postService.reopenAsDraft(post.getId());
+                reset++;
+            }
+        }
+        return reset;
+    }
+
+    /**
+     * Posts read their text from the content row when they publish, so editing content
+     * here also changes any draft made from it. Tell the user when that applies.
+     */
+    private void showEditableDraftHint(Content content) {
+        try {
+            long editable = postService.listAll().stream()
+                    .filter(post -> post.getContentId() == content.getId())
+                    .filter(post -> post.getStatus() == PostStatus.DRAFT
+                            || post.getStatus() == PostStatus.VALIDATED)
+                    .count();
+            if (editable > 0) {
+                setMessage("Editing this will also update " + editable
+                        + (editable == 1 ? " post" : " posts") + " still waiting to publish. "
+                        + "Validate them again afterwards.", "message-info");
+            } else {
+                setMessage("", "message-info");
+            }
+        } catch (Exception e) {
+            setMessage("", "message-info");
+        }
     }
 
     private void updateCharacterCount(String body) {

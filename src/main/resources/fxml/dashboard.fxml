@@ -24,6 +24,10 @@
         </padding>
 
         <HBox spacing="16.0" alignment="CENTER">
+            <VBox styleClass="stat-card, stat-card-content">
+                <Label fx:id="contentValueLabel" text="0" styleClass="stat-value"/>
+                <Label text="CONTENT" styleClass="stat-label"/>
+            </VBox>
             <VBox styleClass="stat-card, stat-card-total">
                 <Label fx:id="totalValueLabel" text="0" styleClass="stat-value"/>
                 <Label text="TOTAL POSTS" styleClass="stat-label"/>
