@@ -75,4 +75,21 @@ class PostServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> postService.markValidated(post.getId()));
     }
+
+    @Test
+    void cancellingARemovesItFromScheduledList() throws Exception {
+        Post post = postService.createDraft(contentId, platformId);
+        postService.markValidated(post.getId());
+        postService.schedule(post.getId(), "2026-01-01T10:00");
+
+        postService.cancel(post.getId());
+
+        boolean stillScheduled = postService.listByStatus(PostStatus.SCHEDULED).stream()
+                .anyMatch(p -> p.getId().equals(post.getId()));
+        boolean nowCancelled = postService.listByStatus(PostStatus.CANCELLED).stream()
+                .anyMatch(p -> p.getId().equals(post.getId()));
+
+        assertEquals(false, stillScheduled);
+        assertEquals(true, nowCancelled);
+    }
 }

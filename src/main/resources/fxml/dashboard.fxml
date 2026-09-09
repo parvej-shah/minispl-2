@@ -11,4 +11,5 @@
     <Label fx:id="summaryLabel" text="Dashboard loading..."/>
     <Button fx:id="manageContentButton" text="Manage Content" onAction="#handleOpenContent"/>
     <Button fx:id="managePostsButton" text="Manage Posts" onAction="#handleOpenPosts"/>
+    <Button fx:id="scheduledPostsButton" text="Scheduled Posts" onAction="#handleOpenScheduledPosts"/>
 </VBox>
