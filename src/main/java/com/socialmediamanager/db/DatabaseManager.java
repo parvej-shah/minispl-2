@@ -1,5 +1,8 @@
 package com.socialmediamanager.db;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -7,7 +10,8 @@ import java.sql.Statement;
 
 public class DatabaseManager {
 
-    private static final String DEFAULT_DB_URL = "jdbc:sqlite:social_media_manager.db";
+    private static final String DEFAULT_DB_URL =
+            "jdbc:sqlite:" + System.getProperty("user.home") + "/.social-media-manager/app.db";
     private static Connection connection;
 
     private DatabaseManager() {
@@ -16,12 +20,27 @@ public class DatabaseManager {
     public static Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             String url = System.getProperty("db.url", DEFAULT_DB_URL);
+            ensureParentDirectoryExists(url);
             connection = DriverManager.getConnection(url);
             try (Statement statement = connection.createStatement()) {
                 statement.execute("PRAGMA foreign_keys = ON");
             }
         }
         return connection;
+    }
+
+    private static void ensureParentDirectoryExists(String url) {
+        if (url.contains(":memory:")) {
+            return;
+        }
+        Path parent = Path.of(url.substring("jdbc:sqlite:".length())).getParent();
+        if (parent != null) {
+            try {
+                Files.createDirectories(parent);
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not create database folder: " + parent, e);
+            }
+        }
     }
 
     public static void initializeSchema() throws SQLException {

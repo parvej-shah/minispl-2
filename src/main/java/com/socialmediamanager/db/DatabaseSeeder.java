@@ -10,12 +10,58 @@ public class DatabaseSeeder {
 
     private static final List<String> DEFAULT_PLATFORMS = List.of("Facebook", "Instagram", "X");
 
+    private static final List<String[]> SAMPLE_CONTENT = List.of(
+            new String[]{
+                    "Pohela Boishakh Greetings",
+                    "Shubho Noboborsho! Wishing everyone a joyful Bengali New Year from all of us. "
+                            + "May the year ahead bring peace and prosperity to every home.",
+                    "TEXT"
+            },
+            new String[]{
+                    "Cox's Bazar Sunset",
+                    "Golden hour on the longest natural sea beach in the world. "
+                            + "Cox's Bazar never disappoints.",
+                    "IMAGE"
+            },
+            new String[]{
+                    "Sundarbans Mangrove Tour",
+                    "A short clip from our boat trip through the Sundarbans — "
+                            + "home of the Royal Bengal Tiger and the world's largest mangrove forest.",
+                    "VIDEO"
+            },
+            new String[]{
+                    "Eid Collection Discount",
+                    "Eid Mubarak! Get 25% off on our entire panjabi and saree collection. "
+                            + "Use code EID25 at checkout. Free delivery inside Dhaka.",
+                    "PROMOTIONAL"
+            },
+            new String[]{
+                    "Victory Day Tribute",
+                    "On this 16th December we remember the sacrifice of the freedom fighters of 1971. "
+                            + "Fifty-four years since Bangladesh earned its independence, we honour every "
+                            + "life given for the language, the flag and the country we call home. "
+                            + "Today we visit Jatiyo Smriti Shoudho in Savar to pay our respects, and we "
+                            + "invite our community to share the stories their families carry from the "
+                            + "Liberation War so that the next generation never forgets what was paid.",
+                    "TEXT"
+            },
+            new String[]{
+                    "Padma Bridge Anniversary",
+                    "Three years since the Padma Bridge opened and connected 21 southern districts "
+                            + "to the capital. Built with our own financing.",
+                    "IMAGE"
+            });
+
     private DatabaseSeeder() {
     }
 
     public static void seed() throws SQLException {
         Connection connection = DatabaseManager.getConnection();
+        seedPlatforms(connection);
+        seedContent(connection);
+    }
 
+    private static void seedPlatforms(Connection connection) throws SQLException {
         if (!isEmpty(connection, "platform")) {
             return;
         }
@@ -24,6 +70,22 @@ public class DatabaseSeeder {
         try (PreparedStatement statement = connection.prepareStatement(insertPlatform)) {
             for (String platformName : DEFAULT_PLATFORMS) {
                 statement.setString(1, platformName);
+                statement.executeUpdate();
+            }
+        }
+    }
+
+    private static void seedContent(Connection connection) throws SQLException {
+        if (!isEmpty(connection, "content")) {
+            return;
+        }
+
+        String insertContent = "INSERT INTO content (title, body, content_type) VALUES (?, ?, ?)";
+        try (PreparedStatement statement = connection.prepareStatement(insertContent)) {
+            for (String[] row : SAMPLE_CONTENT) {
+                statement.setString(1, row[0]);
+                statement.setString(2, row[1]);
+                statement.setString(3, row[2]);
                 statement.executeUpdate();
             }
         }
