@@ -85,6 +85,19 @@ public class DatabaseManager {
                     FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE
                 )
                 """);
+
+            statement.execute("""
+                CREATE TABLE IF NOT EXISTS engagement_metric (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    post_id INTEGER NOT NULL UNIQUE,
+                    likes INTEGER NOT NULL DEFAULT 0,
+                    shares INTEGER NOT NULL DEFAULT 0,
+                    comments INTEGER NOT NULL DEFAULT 0,
+                    reach INTEGER NOT NULL DEFAULT 0,
+                    recorded_at TEXT NOT NULL DEFAULT (datetime('now')),
+                    FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE
+                )
+                """);
         }
     }
 }
