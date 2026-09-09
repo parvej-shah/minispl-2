@@ -26,6 +26,9 @@ public class DashboardController {
     @FXML
     private Button scheduledPostsButton;
 
+    @FXML
+    private Button publishingHistoryButton;
+
     private final PostService postService = new PostService();
 
     @FXML
@@ -60,6 +63,16 @@ public class DashboardController {
             SceneNavigator.switchTo(stage, "/fxml/scheduled_posts.fxml");
         } catch (Exception e) {
             summaryLabel.setText("Error opening scheduled posts screen: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleOpenPublishingHistory() {
+        try {
+            Stage stage = (Stage) publishingHistoryButton.getScene().getWindow();
+            SceneNavigator.switchTo(stage, "/fxml/publishing_history.fxml");
+        } catch (Exception e) {
+            summaryLabel.setText("Error opening publishing history screen: " + e.getMessage());
         }
     }
 

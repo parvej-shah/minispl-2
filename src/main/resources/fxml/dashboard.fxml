@@ -12,4 +12,5 @@
     <Button fx:id="manageContentButton" text="Manage Content" onAction="#handleOpenContent"/>
     <Button fx:id="managePostsButton" text="Manage Posts" onAction="#handleOpenPosts"/>
     <Button fx:id="scheduledPostsButton" text="Scheduled Posts" onAction="#handleOpenScheduledPosts"/>
+    <Button fx:id="publishingHistoryButton" text="Publishing History" onAction="#handleOpenPublishingHistory"/>
 </VBox>

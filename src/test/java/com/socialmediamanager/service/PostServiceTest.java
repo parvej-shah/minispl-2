@@ -9,11 +9,14 @@ import com.socialmediamanager.model.ContentType;
 import com.socialmediamanager.model.Platform;
 import com.socialmediamanager.model.Post;
 import com.socialmediamanager.model.PostStatus;
+import com.socialmediamanager.model.PublishingResult;
+import com.socialmediamanager.observer.ActivityLogListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PostServiceTest {
 
@@ -91,5 +94,39 @@ class PostServiceTest {
 
         assertEquals(false, stillScheduled);
         assertEquals(true, nowCancelled);
+    }
+
+    @Test
+    void markPublishedRecordsHistoryAndNotifiesListeners() throws Exception {
+        ActivityLogListener listener = new ActivityLogListener();
+        postService.addListener(listener);
+
+        Post post = postService.createDraft(contentId, platformId);
+        postService.markValidated(post.getId());
+        postService.schedule(post.getId(), "2026-01-01T10:00");
+        postService.startPublishing(post.getId());
+        postService.markPublished(post.getId());
+
+        boolean hasSuccessEntry = postService.listPublishingHistory().stream()
+                .anyMatch(e -> e.getPostId() == post.getId() && e.getResult() == PublishingResult.SUCCESS);
+
+        assertTrue(hasSuccessEntry);
+        assertEquals(1, listener.getEntries().size());
+    }
+
+    @Test
+    void markFailedRecordsFailureReason() throws Exception {
+        Post post = postService.createDraft(contentId, platformId);
+        postService.markValidated(post.getId());
+        postService.schedule(post.getId(), "2026-01-01T10:00");
+        postService.startPublishing(post.getId());
+        postService.markFailed(post.getId(), "Simulated network error");
+
+        boolean hasFailureEntry = postService.listPublishingHistory().stream()
+                .anyMatch(e -> e.getPostId() == post.getId()
+                        && e.getResult() == PublishingResult.FAILURE
+                        && "Simulated network error".equals(e.getMessage()));
+
+        assertTrue(hasFailureEntry);
     }
 }
