@@ -14,11 +14,14 @@ public class ScheduledPostsController {
     private ListView<Post> scheduledListView;
     @FXML
     private Label messageLabel;
+    @FXML
+    private NavBarController navBarController;
 
     private final PostService postService = new PostService();
 
     @FXML
     private void initialize() {
+        navBarController.setActiveScreen("scheduled");
         refresh();
     }
 

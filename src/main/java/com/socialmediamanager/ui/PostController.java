@@ -30,6 +30,8 @@ public class PostController {
     private Label statusLabel;
     @FXML
     private Label messageLabel;
+    @FXML
+    private NavBarController navBarController;
 
     private final PostService postService = new PostService();
     private final ContentDao contentDao = new ContentDao();
@@ -38,13 +40,9 @@ public class PostController {
 
     @FXML
     private void initialize() {
+        navBarController.setActiveScreen("posts");
         postService.addListener(activityLogListener);
-        try {
-            contentComboBox.setItems(FXCollections.observableArrayList(contentDao.findAll()));
-            platformComboBox.setItems(FXCollections.observableArrayList(platformDao.findAll()));
-        } catch (Exception e) {
-            messageLabel.setText("Error loading options: " + e.getMessage());
-        }
+        refreshOptions();
 
         postListView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
             if (newValue != null) {
@@ -53,6 +51,20 @@ public class PostController {
         });
 
         refreshList();
+    }
+
+    private void refreshOptions() {
+        try {
+            var contentItems = contentDao.findAll();
+            contentComboBox.setItems(FXCollections.observableArrayList(contentItems));
+            if (contentItems.isEmpty()) {
+                messageLabel.setText("No content yet — create some on the Content screen first.");
+            }
+
+            platformComboBox.setItems(FXCollections.observableArrayList(platformDao.findAll()));
+        } catch (Exception e) {
+            messageLabel.setText("Error loading options: " + e.getMessage());
+        }
     }
 
     @FXML
