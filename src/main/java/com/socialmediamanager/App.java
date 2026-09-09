@@ -2,6 +2,7 @@ package com.socialmediamanager;
 
 import com.socialmediamanager.db.DatabaseManager;
 import com.socialmediamanager.db.DatabaseSeeder;
+import com.socialmediamanager.observer.EngagementRecorderListener;
 import com.socialmediamanager.service.PublishingScheduler;
 import com.socialmediamanager.service.PostService;
 import javafx.application.Application;
@@ -10,21 +11,22 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.sql.SQLException;
-
 public class App extends Application {
 
     private PublishingScheduler publishingScheduler;
 
     @Override
-    public void init() throws SQLException {
+    public void init() throws Exception {
         DatabaseManager.initializeSchema();
         DatabaseSeeder.seed();
+        DatabaseSeeder.seedAnalytics();
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        publishingScheduler = new PublishingScheduler(new PostService());
+        PostService schedulerPostService = new PostService();
+        schedulerPostService.addListener(new EngagementRecorderListener());
+        publishingScheduler = new PublishingScheduler(schedulerPostService);
         publishingScheduler.start();
         Parent root = FXMLLoader.load(getClass().getResource("/fxml/dashboard.fxml"));
         Scene scene = new Scene(root, 1180, 700);

@@ -1,5 +1,15 @@
 package com.socialmediamanager.db;
 
+import com.socialmediamanager.dao.ContentDao;
+import com.socialmediamanager.dao.PlatformDao;
+import com.socialmediamanager.model.Content;
+import com.socialmediamanager.model.Platform;
+import com.socialmediamanager.model.Post;
+import com.socialmediamanager.model.PostStatus;
+import com.socialmediamanager.model.PublishingResult;
+import com.socialmediamanager.observer.EngagementRecorderListener;
+import com.socialmediamanager.service.PostService;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -59,6 +69,52 @@ public class DatabaseSeeder {
         Connection connection = DatabaseManager.getConnection();
         seedPlatforms(connection);
         seedContent(connection);
+    }
+
+    /**
+     * Gives the Analytics screen something to show.
+     *
+     * <p>Publishes a spread of posts across the platforms if none have been published yet,
+     * then records engagement for any published post that is missing it — which covers
+     * posts that were published before engagement recording existed.
+     */
+    public static void seedAnalytics() throws Exception {
+        PostService postService = new PostService();
+        EngagementRecorderListener recorder = new EngagementRecorderListener();
+
+        if (postService.listByStatus(PostStatus.PUBLISHED).isEmpty()) {
+            publishSamplePosts(postService);
+        }
+        backfillEngagement(postService, recorder);
+    }
+
+    private static void publishSamplePosts(PostService postService) throws Exception {
+        List<Content> contents = new ContentDao().findAll();
+        List<Platform> platforms = new PlatformDao().findAll();
+
+        // Leave the newest couple of items unpublished so there is still content to
+        // take through the draft, validate and publish flow by hand.
+        int publishable = Math.max(0, contents.size() - 2);
+        for (Content content : contents.subList(0, publishable)) {
+            for (Platform platform : platforms) {
+                try {
+                    Post post = postService.createDraft(content.getId(), platform.getId());
+                    postService.markValidated(post.getId());
+                    postService.startPublishing(post.getId());
+                    postService.markPublished(post.getId());
+                } catch (Exception e) {
+                    // Content the platform's rules reject, or a post that already exists,
+                    // simply does not become a published sample.
+                }
+            }
+        }
+    }
+
+    private static void backfillEngagement(PostService postService,
+                                           EngagementRecorderListener recorder) throws Exception {
+        for (Post post : postService.listByStatus(PostStatus.PUBLISHED)) {
+            recorder.onPublishingOutcome(post, PublishingResult.SUCCESS, null);
+        }
     }
 
     private static void seedPlatforms(Connection connection) throws SQLException {

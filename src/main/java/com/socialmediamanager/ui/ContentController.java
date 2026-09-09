@@ -2,6 +2,7 @@ package com.socialmediamanager.ui;
 
 import com.socialmediamanager.model.Content;
 import com.socialmediamanager.model.ContentType;
+import com.socialmediamanager.model.Post;
 import com.socialmediamanager.model.PostStatus;
 import com.socialmediamanager.service.ContentService;
 import com.socialmediamanager.service.PostService;

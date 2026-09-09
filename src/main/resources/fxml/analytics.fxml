@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.socialmediamanager.ui.AnalyticsController">
+    <fx:include fx:id="navBar" source="nav_bar.fxml"/>
+
+    <VBox VBox.vgrow="ALWAYS">
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="16.0"/>
+        </padding>
+
+        <VBox spacing="3.0" styleClass="page-header">
+            <Label text="Analytics" styleClass="page-title"/>
+            <Label text="How the posts you published are performing"
+                   styleClass="page-subtitle"/>
+        </VBox>
+
+        <VBox spacing="16.0" VBox.vgrow="ALWAYS" styleClass="content-card">
+            <padding>
+                <Insets bottom="18.0" left="18.0" right="18.0" top="18.0"/>
+            </padding>
+
+            <HBox spacing="14.0">
+                <VBox styleClass="stat-card, stat-card-content" HBox.hgrow="ALWAYS">
+                    <Label fx:id="likesLabel" text="0" styleClass="stat-value"/>
+                    <Label text="LIKES" styleClass="stat-label"/>
+                </VBox>
+                <VBox styleClass="stat-card, stat-card-total" HBox.hgrow="ALWAYS">
+                    <Label fx:id="sharesLabel" text="0" styleClass="stat-value"/>
+                    <Label text="SHARES" styleClass="stat-label"/>
+                </VBox>
+                <VBox styleClass="stat-card, stat-card-scheduled" HBox.hgrow="ALWAYS">
+                    <Label fx:id="commentsLabel" text="0" styleClass="stat-value"/>
+                    <Label text="COMMENTS" styleClass="stat-label"/>
+                </VBox>
+                <VBox styleClass="stat-card, stat-card-published" HBox.hgrow="ALWAYS">
+                    <Label fx:id="engagementRateLabel" text="0%" styleClass="stat-value"/>
+                    <Label text="ENGAGEMENT RATE" styleClass="stat-label"/>
+                </VBox>
+            </HBox>
+
+            <Label fx:id="coverageLabel" styleClass="hint-text" wrapText="true"/>
+
+            <HBox spacing="16.0" VBox.vgrow="ALWAYS">
+                <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                    <Label text="By platform" styleClass="section-label"/>
+                    <TableView fx:id="platformTable" VBox.vgrow="ALWAYS">
+                        <placeholder>
+                            <Label text="Nothing published yet — publish a post to see how it performed."
+                                   wrapText="true" styleClass="hint-text"/>
+                        </placeholder>
+                        <columns>
+                            <TableColumn fx:id="platformNameColumn" text="Platform" prefWidth="110.0"/>
+                            <TableColumn fx:id="platformPostsColumn" text="Posts" prefWidth="60.0"/>
+                            <TableColumn fx:id="platformLikesColumn" text="Likes" prefWidth="70.0"/>
+                            <TableColumn fx:id="platformSharesColumn" text="Shares" prefWidth="70.0"/>
+                            <TableColumn fx:id="platformRateColumn" text="Engagement" prefWidth="95.0"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+
+                <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                    <Label text="Best performing posts" styleClass="section-label"/>
+                    <TableView fx:id="topPostTable" VBox.vgrow="ALWAYS">
+                        <placeholder>
+                            <Label text="No published posts to rank yet."
+                                   wrapText="true" styleClass="hint-text"/>
+                        </placeholder>
+                        <columns>
+                            <TableColumn fx:id="topContentColumn" text="Content" prefWidth="160.0"/>
+                            <TableColumn fx:id="topPlatformColumn" text="Platform" prefWidth="90.0"/>
+                            <TableColumn fx:id="topLikesColumn" text="Likes" prefWidth="70.0"/>
+                            <TableColumn fx:id="topRateColumn" text="Engagement" prefWidth="95.0"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </HBox>
+
+            <Label fx:id="messageLabel" wrapText="true"/>
+        </VBox>
+    </VBox>
+</VBox>
