@@ -2,19 +2,66 @@
 
 ## Project Overview
 
-The **Social Media Manager** is a desktop-based application designed to simulate a centralized hub where marketing professionals and content creators can manage their digital presence. Instead of connecting to real, live social media APIs, this application serves as a comprehensive simulation environment. 
+The **Social Media Manager** is a desktop application (JavaFX + Maven + SQLite) that simulates a
+centralized hub for managing social media content. It does not call any real social media APIs —
+publishing is simulated, including a random chance of failure, so the full lifecycle (including
+error handling) can be exercised and demonstrated.
 
-The core idea is to provide a complete workflow for handling social media content. Users can:
-1. **Create and Categorize Content**: Draft different types of posts, including text updates, images, videos, and promotional material with discount codes or links.
-2. **Apply Platform-Specific Rules**: The system simulates the distinct rules of various platforms (such as Facebook, Instagram, and X/Twitter). For example, a post destined for Instagram must contain media, while a post for X is subject to strict character limits.
-3. **Manage the Publishing Lifecycle**: Posts don't just appear instantly. They follow a realistic lifecycle: starting as a `Draft`, moving to `Validated`, waiting in a `Scheduled` queue, and finally simulating the `Publishing` process before being marked as `Published` (or `Failed`).
-4. **Track History and Analytics**: Once published, the application records the publishing history and generates simulated engagement analytics (views, likes, shares, and comments) so users can see how their content "performed."
+Users can:
+1. **Manage content** — create, edit, and delete text/image/video/promotional content.
+2. **Create posts** from that content targeted at a platform (Facebook, Instagram, or X), which
+   are validated against that platform's rules before they can be scheduled.
+3. **Schedule and cancel posts**, and simulate publishing them.
+4. **Review publishing history**, filterable by outcome and platform, and see live counts on a
+   Dashboard.
 
 ## Why this Project?
 
-This domain was chosen because it naturally requires complex, multi-step business logic rather than simple data entry (CRUD). 
+This domain naturally requires multi-step business logic rather than simple CRUD forms.
+Enforcing a post's lifecycle, applying different validation rules per platform, and reacting to
+publishing outcomes gave a real environment to apply Design Patterns where each one solves an
+actual problem, rather than being added just to check a box.
 
-Handling different platform rules, managing a precise state machine for the scheduling lifecycle, and responding to system-wide events (like updating analytics when a post publishes) provides the perfect environment to implement and demonstrate robust software design principles and Design Patterns.
+## Design Patterns
 
----
-*Note: Build and installation instructions will be added as implementation progresses.*
+See [`docs/design-decisions.md`](docs/design-decisions.md) for the full problem/solution/
+alternatives/future-benefit write-up for each pattern, and
+[`docs/class-diagram.md`](docs/class-diagram.md) for the UML class diagram.
+
+- **State** — `PostLifecycle` enforces valid post status transitions (Draft → Validated →
+  Scheduled → Publishing → Published, plus cancel/retry branches).
+- **Strategy** — `PlatformRules` implementations (`FacebookRules`, `InstagramRules`, `XRules`)
+  each encode one platform's validation rules behind a common interface.
+- **Observer** — `PostService` notifies registered `PostEventListener`s when a post finishes
+  publishing, independent of the permanent `publishing_history` record it also writes.
+
+## Database
+
+SQLite, four tables: `platform`, `content`, `post`, `publishing_history`. See
+[`docs/er-diagram.md`](docs/er-diagram.md) for the full ER diagram and relationship notes.
+
+## Screens
+
+1. Dashboard — live post counts (total/published/scheduled/failed), navigation to other screens.
+2. Content Management — CRUD for content.
+3. Create/Edit Post — create drafts, validate, schedule, cancel, simulate publishing.
+4. Scheduled Posts — view and cancel currently scheduled posts.
+5. Publishing History — view outcomes, filterable by result and platform.
+
+## Running the app
+
+```
+mvn javafx:run
+```
+
+The SQLite database (`social_media_manager.db`) and schema are created automatically on first
+run, along with seed data for the three platforms.
+
+## Running tests
+
+```
+mvn test
+```
+
+Tests use an in-memory SQLite database (configured via the `db.url` system property in
+`pom.xml`'s surefire config) so they never touch the real `social_media_manager.db` file.
